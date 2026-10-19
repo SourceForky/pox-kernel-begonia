@@ -454,8 +454,11 @@ jobs:
               done
             done < structs.txt
 
-            # (3b) the other definition of a redefined identifier
-            sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt | sort -u > idents.txt
+            # (3b) the other definition of a redefined identifier, and the adopted
+            #      header that declares a function with a conflicting signature
+            { sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+              sed -n "s/.*conflicting types for '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+            } | sort -u > idents.txt
             while read -r t; do
               [ -n "$t" ] || continue
               for df in $(git grep -l -w "$t" HEAD 2>/dev/null | head -8); do
