@@ -10,7 +10,7 @@
 int nf_queue(struct sk_buff *skb, struct nf_hook_state *state,
 	     const struct nf_hook_entries *entries, unsigned int index,
 	     unsigned int verdict);
-void nf_queue_nf_hook_drop(struct net *net);
+unsigned int nf_queue_nf_hook_drop(struct net *net);
 
 /* nf_log.c */
 int __init netfilter_log_init(void);

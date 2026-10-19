@@ -141,24 +141,8 @@ xfs_finobt_alloc_block(
 	union xfs_btree_ptr	*new,
 	int			*stat)
 {
-	if (cur->bc_mp->m_inotbt_nores)
-		return xfs_inobt_alloc_block(cur, start, new, stat);
 	return __xfs_inobt_alloc_block(cur, start, new, stat,
 			XFS_AG_RESV_METADATA);
-}
-
-STATIC int
-__xfs_inobt_free_block(
-	struct xfs_btree_cur	*cur,
-	struct xfs_buf		*bp,
-	enum xfs_ag_resv_type	resv)
-{
-	struct xfs_owner_info	oinfo;
-
-	xfs_rmap_ag_owner(&oinfo, XFS_RMAP_OWN_INOBT);
-	return xfs_free_extent(cur->bc_tp,
-			XFS_DADDR_TO_FSB(cur->bc_mp, XFS_BUF_ADDR(bp)), 1,
-			&oinfo, resv);
 }
 
 STATIC int
@@ -166,17 +150,12 @@ xfs_inobt_free_block(
 	struct xfs_btree_cur	*cur,
 	struct xfs_buf		*bp)
 {
-	return __xfs_inobt_free_block(cur, bp, XFS_AG_RESV_NONE);
-}
+	struct xfs_owner_info	oinfo;
 
-STATIC int
-xfs_finobt_free_block(
-	struct xfs_btree_cur	*cur,
-	struct xfs_buf		*bp)
-{
-	if (cur->bc_mp->m_inotbt_nores)
-		return xfs_inobt_free_block(cur, bp);
-	return __xfs_inobt_free_block(cur, bp, XFS_AG_RESV_METADATA);
+	xfs_rmap_ag_owner(&oinfo, XFS_RMAP_OWN_INOBT);
+	return xfs_free_extent(cur->bc_tp,
+			XFS_DADDR_TO_FSB(cur->bc_mp, XFS_BUF_ADDR(bp)), 1,
+			&oinfo, XFS_AG_RESV_NONE);
 }
 
 STATIC int
@@ -271,13 +250,12 @@ xfs_inobt_diff_two_keys(
 			  be32_to_cpu(k2->inobt.ir_startino);
 }
 
-static xfs_failaddr_t
+static int
 xfs_inobt_verify(
 	struct xfs_buf		*bp)
 {
 	struct xfs_mount	*mp = bp->b_target->bt_mount;
 	struct xfs_btree_block	*block = XFS_BUF_TO_BLOCK(bp);
-	xfs_failaddr_t		fa;
 	unsigned int		level;
 
 	/*
@@ -293,21 +271,20 @@ xfs_inobt_verify(
 	switch (block->bb_magic) {
 	case cpu_to_be32(XFS_IBT_CRC_MAGIC):
 	case cpu_to_be32(XFS_FIBT_CRC_MAGIC):
-		fa = xfs_btree_sblock_v5hdr_verify(bp);
-		if (fa)
-			return fa;
+		if (!xfs_btree_sblock_v5hdr_verify(bp))
+			return false;
 		/* fall through */
 	case cpu_to_be32(XFS_IBT_MAGIC):
 	case cpu_to_be32(XFS_FIBT_MAGIC):
 		break;
 	default:
-		return NULL;
+		return 0;
 	}
 
 	/* level verification */
 	level = be16_to_cpu(block->bb_level);
 	if (level >= mp->m_in_maxlevels)
-		return __this_address;
+		return false;
 
 	return xfs_btree_sblock_verify(bp, mp->m_inobt_mxr[level != 0]);
 }
@@ -316,30 +293,25 @@ static void
 xfs_inobt_read_verify(
 	struct xfs_buf	*bp)
 {
-	xfs_failaddr_t	fa;
-
 	if (!xfs_btree_sblock_verify_crc(bp))
-		xfs_verifier_error(bp, -EFSBADCRC, __this_address);
-	else {
-		fa = xfs_inobt_verify(bp);
-		if (fa)
-			xfs_verifier_error(bp, -EFSCORRUPTED, fa);
-	}
+		xfs_buf_ioerror(bp, -EFSBADCRC);
+	else if (!xfs_inobt_verify(bp))
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
 
-	if (bp->b_error)
+	if (bp->b_error) {
 		trace_xfs_btree_corrupt(bp, _RET_IP_);
+		xfs_verifier_error(bp);
+	}
 }
 
 static void
 xfs_inobt_write_verify(
 	struct xfs_buf	*bp)
 {
-	xfs_failaddr_t	fa;
-
-	fa = xfs_inobt_verify(bp);
-	if (fa) {
+	if (!xfs_inobt_verify(bp)) {
 		trace_xfs_btree_corrupt(bp, _RET_IP_);
-		xfs_verifier_error(bp, -EFSCORRUPTED, fa);
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
+		xfs_verifier_error(bp);
 		return;
 	}
 	xfs_btree_sblock_calc_crc(bp);
@@ -350,7 +322,6 @@ const struct xfs_buf_ops xfs_inobt_buf_ops = {
 	.name = "xfs_inobt",
 	.verify_read = xfs_inobt_read_verify,
 	.verify_write = xfs_inobt_write_verify,
-	.verify_struct = xfs_inobt_verify,
 };
 
 STATIC int
@@ -401,7 +372,7 @@ static const struct xfs_btree_ops xfs_finobt_ops = {
 	.dup_cursor		= xfs_inobt_dup_cursor,
 	.set_root		= xfs_finobt_set_root,
 	.alloc_block		= xfs_finobt_alloc_block,
-	.free_block		= xfs_finobt_free_block,
+	.free_block		= xfs_inobt_free_block,
 	.get_minrecs		= xfs_inobt_get_minrecs,
 	.get_maxrecs		= xfs_inobt_get_maxrecs,
 	.init_key_from_rec	= xfs_inobt_init_key_from_rec,

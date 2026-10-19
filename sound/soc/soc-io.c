@@ -34,10 +34,6 @@ int snd_soc_component_read(struct snd_soc_component *component,
 		ret = regmap_read(component->regmap, reg, val);
 	else if (component->read)
 		ret = component->read(component, reg, val);
-	else if (component->driver->read) {
-		*val = component->driver->read(component, reg);
-		ret = 0;
-	}
 	else
 		ret = -EIO;
 
@@ -74,8 +70,6 @@ int snd_soc_component_write(struct snd_soc_component *component,
 		return regmap_write(component->regmap, reg, val);
 	else if (component->write)
 		return component->write(component, reg, val);
-	else if (component->driver->write)
-		return component->driver->write(component, reg, val);
 	else
 		return -EIO;
 }

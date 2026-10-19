@@ -1,0 +1,14 @@
+cfg80211_ibss_params
+fb_info
+i2c_bus_recovery_info
+net_bridge
+net_bridge_fdb_entry
+netns_core
+netns_nf
+phy_driver
+refcount_struct
+regulator
+regulator_state
+rproc
+snd_soc_component_driver
+xfs_buf

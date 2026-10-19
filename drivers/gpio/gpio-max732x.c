@@ -709,7 +709,8 @@ static int max732x_probe(struct i2c_client *client,
 	return 0;
 
 out_failed:
-	i2c_unregister_device(chip->client_dummy);
+	if (chip->client_dummy)
+		i2c_unregister_device(chip->client_dummy);
 	return ret;
 }
 
@@ -733,7 +734,8 @@ static int max732x_remove(struct i2c_client *client)
 	gpiochip_remove(&chip->gpio_chip);
 
 	/* unregister any dummy i2c_client */
-	i2c_unregister_device(chip->client_dummy);
+	if (chip->client_dummy)
+		i2c_unregister_device(chip->client_dummy);
 
 	return 0;
 }

@@ -223,31 +223,29 @@ xfs_refcountbt_diff_two_keys(
 			  be32_to_cpu(k2->refc.rc_startblock);
 }
 
-STATIC xfs_failaddr_t
+STATIC bool
 xfs_refcountbt_verify(
 	struct xfs_buf		*bp)
 {
 	struct xfs_mount	*mp = bp->b_target->bt_mount;
 	struct xfs_btree_block	*block = XFS_BUF_TO_BLOCK(bp);
 	struct xfs_perag	*pag = bp->b_pag;
-	xfs_failaddr_t		fa;
 	unsigned int		level;
 
 	if (block->bb_magic != cpu_to_be32(XFS_REFC_CRC_MAGIC))
-		return __this_address;
+		return false;
 
 	if (!xfs_sb_version_hasreflink(&mp->m_sb))
-		return __this_address;
-	fa = xfs_btree_sblock_v5hdr_verify(bp);
-	if (fa)
-		return fa;
+		return false;
+	if (!xfs_btree_sblock_v5hdr_verify(bp))
+		return false;
 
 	level = be16_to_cpu(block->bb_level);
 	if (pag && pag->pagf_init) {
 		if (level >= pag->pagf_refcount_level)
-			return __this_address;
+			return false;
 	} else if (level >= mp->m_refc_maxlevels)
-		return __this_address;
+		return false;
 
 	return xfs_btree_sblock_verify(bp, mp->m_refc_mxr[level != 0]);
 }
@@ -256,30 +254,25 @@ STATIC void
 xfs_refcountbt_read_verify(
 	struct xfs_buf	*bp)
 {
-	xfs_failaddr_t	fa;
-
 	if (!xfs_btree_sblock_verify_crc(bp))
-		xfs_verifier_error(bp, -EFSBADCRC, __this_address);
-	else {
-		fa = xfs_refcountbt_verify(bp);
-		if (fa)
-			xfs_verifier_error(bp, -EFSCORRUPTED, fa);
-	}
+		xfs_buf_ioerror(bp, -EFSBADCRC);
+	else if (!xfs_refcountbt_verify(bp))
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
 
-	if (bp->b_error)
+	if (bp->b_error) {
 		trace_xfs_btree_corrupt(bp, _RET_IP_);
+		xfs_verifier_error(bp);
+	}
 }
 
 STATIC void
 xfs_refcountbt_write_verify(
 	struct xfs_buf	*bp)
 {
-	xfs_failaddr_t	fa;
-
-	fa = xfs_refcountbt_verify(bp);
-	if (fa) {
+	if (!xfs_refcountbt_verify(bp)) {
 		trace_xfs_btree_corrupt(bp, _RET_IP_);
-		xfs_verifier_error(bp, -EFSCORRUPTED, fa);
+		xfs_buf_ioerror(bp, -EFSCORRUPTED);
+		xfs_verifier_error(bp);
 		return;
 	}
 	xfs_btree_sblock_calc_crc(bp);
@@ -290,7 +283,6 @@ const struct xfs_buf_ops xfs_refcountbt_buf_ops = {
 	.name			= "xfs_refcountbt",
 	.verify_read		= xfs_refcountbt_read_verify,
 	.verify_write		= xfs_refcountbt_write_verify,
-	.verify_struct		= xfs_refcountbt_verify,
 };
 
 STATIC int
