@@ -1,0 +1,3 @@
+arch/arm64/include/asm/sparsemem.h
+scripts/mod/devicetable-offsets.c
+scripts/mod/devicetable-offsets.c

@@ -1,0 +1,301 @@
+[1;32m[*] =================================================[0m
+[1;32m[*] Building Pox[0m
+[1;32m[*] Version:      1.0.0-Beta[0m
+[1;32m[*] Version Name: Granite (Rock-Solid Stability Edition)[0m
+[1;32m[*] Branch:       main[0m
+[1;32m[*] Commit ID:    8b9bb78[0m
+[1;32m[*] Device:       Redmi Note 8 Pro (begonia)[0m
+[1;32m[*] Maintainer:   TXO R (Pox Project)[0m
+[1;32m[*] Localversion: -Pox-1.0.0-Beta-Granite-8b9bb78[0m
+[1;32m[*] Defconfig:    begonia_user_defconfig[0m
+[1;32m[*] Output Dir:   /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build[0m
+[1;32m[*] Object Dir:   /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out[0m
+[1;32m[*] Jobs:         4[0m
+[1;32m[*] Toolchain:    /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/kerdevdep[0m
+[1;32m[*] =================================================[0m
+[1;32m[*] Using ccache (cache dir: /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/.ccache)[0m
+[1;32m[*] Configuring with begonia_user_defconfig ...[0m
+make[1]: Entering directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+  HOSTCC  scripts/basic/fixdep
+  GEN     ./Makefile
+  HOSTCC  scripts/kconfig/conf.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/zconf.lex.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+arch/arm64/configs/begonia_user_defconfig:5259:warning: override: reassigning to symbol REISERFS_FS
+arch/arm64/configs/begonia_user_defconfig:5260:warning: override: reassigning to symbol JFS_FS
+arch/arm64/configs/begonia_user_defconfig:5261:warning: override: reassigning to symbol XFS_FS
+arch/arm64/configs/begonia_user_defconfig:5262:warning: override: reassigning to symbol BTRFS_FS
+arch/arm64/configs/begonia_user_defconfig:5263:warning: override: reassigning to symbol NILFS2_FS
+arch/arm64/configs/begonia_user_defconfig:5264:warning: override: reassigning to symbol F2FS_FS_COMPRESSION
+arch/arm64/configs/begonia_user_defconfig:5265:warning: override: reassigning to symbol AUTOFS4_FS
+arch/arm64/configs/begonia_user_defconfig:5266:warning: override: reassigning to symbol UDF_FS
+arch/arm64/configs/begonia_user_defconfig:5267:warning: override: reassigning to symbol ADFS_FS
+arch/arm64/configs/begonia_user_defconfig:5268:warning: override: reassigning to symbol AFFS_FS
+arch/arm64/configs/begonia_user_defconfig:5269:warning: override: reassigning to symbol ECRYPT_FS
+arch/arm64/configs/begonia_user_defconfig:5270:warning: override: reassigning to symbol HFS_FS
+arch/arm64/configs/begonia_user_defconfig:5271:warning: override: reassigning to symbol HFSPLUS_FS
+arch/arm64/configs/begonia_user_defconfig:5272:warning: override: reassigning to symbol BEFS_FS
+arch/arm64/configs/begonia_user_defconfig:5273:warning: override: reassigning to symbol BFS_FS
+arch/arm64/configs/begonia_user_defconfig:5274:warning: override: reassigning to symbol EFS_FS
+arch/arm64/configs/begonia_user_defconfig:5275:warning: override: reassigning to symbol CRAMFS
+arch/arm64/configs/begonia_user_defconfig:5276:warning: override: reassigning to symbol SQUASHFS
+arch/arm64/configs/begonia_user_defconfig:5277:warning: override: reassigning to symbol VXFS_FS
+arch/arm64/configs/begonia_user_defconfig:5278:warning: override: reassigning to symbol MINIX_FS
+arch/arm64/configs/begonia_user_defconfig:5279:warning: override: reassigning to symbol OMFS_FS
+arch/arm64/configs/begonia_user_defconfig:5280:warning: override: reassigning to symbol HPFS_FS
+arch/arm64/configs/begonia_user_defconfig:5281:warning: override: reassigning to symbol QNX4FS_FS
+arch/arm64/configs/begonia_user_defconfig:5282:warning: override: reassigning to symbol QNX6FS_FS
+arch/arm64/configs/begonia_user_defconfig:5283:warning: override: reassigning to symbol ROMFS_FS
+arch/arm64/configs/begonia_user_defconfig:5284:warning: override: reassigning to symbol SYSV_FS
+arch/arm64/configs/begonia_user_defconfig:5285:warning: override: reassigning to symbol UFS_FS
+arch/arm64/configs/begonia_user_defconfig:5286:warning: override: reassigning to symbol NETWORK_FILESYSTEMS
+#
+# configuration written to .config
+#
+make[1]: Leaving directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+[1;32m[*] Toolchain lacks patched LLVM Polly - disabling CONFIG_LLVM_POLLY[0m
+[1;32m[*] Setting CONFIG_LOCALVERSION="-Pox-1.0.0-Beta-Granite-8b9bb78" in .config[0m
+make[1]: Entering directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+  GEN     ./Makefile
+scripts/kconfig/conf  --olddefconfig Kconfig
+#
+# configuration written to .config
+#
+make[1]: Leaving directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+[1;32m[*] Starting kernel compilation (nice priority, jobs: 4)...[0m
+make[1]: Entering directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+  GEN     ./Makefile
+scripts/kconfig/conf  --silentoldconfig Kconfig
+  CHK     include/config/kernel.release
+  UPD     include/config/kernel.release
+  GEN     ./Makefile
+  WRAP    arch/arm64/include/generated/uapi/asm/errno.h
+  WRAP    arch/arm64/include/generated/uapi/asm/ioctl.h
+  WRAP    arch/arm64/include/generated/uapi/asm/ioctls.h
+  WRAP    arch/arm64/include/generated/uapi/asm/ipcbuf.h
+  WRAP    arch/arm64/include/generated/uapi/asm/kvm_para.h
+  WRAP    arch/arm64/include/generated/uapi/asm/mman.h
+  WRAP    arch/arm64/include/generated/uapi/asm/msgbuf.h
+  WRAP    arch/arm64/include/generated/uapi/asm/poll.h
+  WRAP    arch/arm64/include/generated/uapi/asm/resource.h
+  WRAP    arch/arm64/include/generated/uapi/asm/sembuf.h
+  WRAP    arch/arm64/include/generated/uapi/asm/shmbuf.h
+  WRAP    arch/arm64/include/generated/uapi/asm/socket.h
+  WRAP    arch/arm64/include/generated/uapi/asm/sockios.h
+  WRAP    arch/arm64/include/generated/uapi/asm/swab.h
+  WRAP    arch/arm64/include/generated/uapi/asm/termbits.h
+  WRAP    arch/arm64/include/generated/uapi/asm/termios.h
+  WRAP    arch/arm64/include/generated/uapi/asm/types.h
+  CHK     include/generated/uapi/linux/version.h
+  UPD     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  UPD     include/generated/utsrelease.h
+rm -f dtboimg.cfg.tmp
+  HOSTCC  scripts/basic/bin2c
+touch dtboimg.cfg.tmp
+rm -f dtbimg.cfg.tmp
+if ! cmp -s dtboimg.cfg.tmp dtboimg.cfg; then \
+	mv dtboimg.cfg.tmp dtboimg.cfg; \
+else \
+	rm dtboimg.cfg.tmp; \
+fi
+touch dtbimg.cfg.tmp
+echo /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out/arch/arm64/boot/mtk.dtb >>dtbimg.cfg.tmp; echo " id=0" >>dtbimg.cfg.tmp; 
+if ! cmp -s dtbimg.cfg.tmp dtbimg.cfg; then \
+	mv dtbimg.cfg.tmp dtbimg.cfg; \
+else \
+	rm dtbimg.cfg.tmp; \
+fi
+  Using /home/runner/work/pox-kernel-begonia/pox-kernel-begonia as source for kernel
+  WRAP    arch/arm64/include/generated/asm/bugs.h
+  WRAP    arch/arm64/include/generated/asm/delay.h
+  WRAP    arch/arm64/include/generated/asm/div64.h
+  WRAP    arch/arm64/include/generated/asm/dma.h
+  WRAP    arch/arm64/include/generated/asm/dma-contiguous.h
+  WRAP    arch/arm64/include/generated/asm/early_ioremap.h
+  WRAP    arch/arm64/include/generated/asm/emergency-restart.h
+  WRAP    arch/arm64/include/generated/asm/hw_irq.h
+  WRAP    arch/arm64/include/generated/asm/irq_regs.h
+  WRAP    arch/arm64/include/generated/asm/kdebug.h
+  WRAP    arch/arm64/include/generated/asm/kmap_types.h
+  WRAP    arch/arm64/include/generated/asm/local.h
+  WRAP    arch/arm64/include/generated/asm/local64.h
+  WRAP    arch/arm64/include/generated/asm/mcs_spinlock.h
+  WRAP    arch/arm64/include/generated/asm/mm-arch-hooks.h
+  WRAP    arch/arm64/include/generated/asm/msi.h
+  WRAP    arch/arm64/include/generated/asm/preempt.h
+  WRAP    arch/arm64/include/generated/asm/qrwlock.h
+  WRAP    arch/arm64/include/generated/asm/rwsem.h
+  WRAP    arch/arm64/include/generated/asm/segment.h
+  WRAP    arch/arm64/include/generated/asm/serial.h
+  WRAP    arch/arm64/include/generated/asm/set_memory.h
+  WRAP    arch/arm64/include/generated/asm/sizes.h
+  WRAP    arch/arm64/include/generated/asm/switch_to.h
+  WRAP    arch/arm64/include/generated/asm/trace_clock.h
+  WRAP    arch/arm64/include/generated/asm/unaligned.h
+  WRAP    arch/arm64/include/generated/asm/user.h
+  WRAP    arch/arm64/include/generated/asm/vga.h
+  WRAP    arch/arm64/include/generated/asm/xor.h
+  HOSTCC  scripts/dtc/dtc.o
+  HOSTCC  scripts/dtc/flattree.o
+  HOSTCC  scripts/dtc/fstree.o
+  HOSTCC  scripts/dtc/data.o
+  HOSTCC  scripts/dtc/livetree.o
+  HOSTCC  scripts/genksyms/genksyms.o
+  HOSTCC  scripts/dtc/treesource.o
+  HOSTCC  scripts/dtc/srcpos.o
+  SHIPPED scripts/genksyms/parse.tab.c
+  SHIPPED scripts/genksyms/lex.lex.c
+  SHIPPED scripts/genksyms/parse.tab.h
+  HOSTCC  scripts/genksyms/parse.tab.o
+  HOSTCC  scripts/dtc/checks.o
+  HOSTCC  scripts/dtc/util.o
+  HOSTCC  scripts/genksyms/lex.lex.o
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+  CC      kernel/bounds.s
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+  CHK     include/generated/timeconst.h
+  UPD     include/generated/timeconst.h
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia
+  CHK     include/generated/bounds.h
+  UPD     include/generated/bounds.h
+  CC      arch/arm64/kernel/asm-offsets.s
+  SHIPPED scripts/dtc/dtc-lexer.lex.c
+  SHIPPED scripts/dtc/dtc-parser.tab.h
+  SHIPPED scripts/dtc/dtc-parser.tab.c
+  HOSTCC  scripts/dtc/dtc-lexer.lex.o
+  HOSTLD  scripts/genksyms/genksyms
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/drivers/misc/mediatek/connectivity/common/Makefile:116: wmt_drv build-in boot.img
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/drivers/misc/mediatek/connectivity/wlan/adaptor/Makefile:53: wmt_chrdev_wifi build-in boot.img
+  HOSTCC  scripts/dtc/dtc-parser.tab.o
+os option: linux
+$MTK_PLATFORM is [mt6785]
+$WLAN_CHIP_ID is [6785]
+$MTK_COMBO_CHIP is [CONNAC]
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/drivers/misc/mediatek/connectivity/wlan/core/gen4m/Makefile:423: wlan_6785_axi build-in boot.img
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  CC      scripts/mod/devicetable-offsets.s
+  HOSTLD  scripts/dtc/dtc
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:206:2: error: invalid application of 'sizeof' to an incomplete type 'struct sdw_device_id'
+        DEVID(sdw_device_id);
+        ^~~~~~~~~~~~~~~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:5:43: note: expanded from macro 'DEVID'
+#define DEVID(devid) DEFINE(SIZE_##devid, sizeof(struct devid))
+                     ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/kbuild.h:6:62: note: expanded from macro 'DEFINE'
+        asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i" (val))
+                                                                    ^~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:206:8: note: forward declaration of 'struct sdw_device_id'
+        DEVID(sdw_device_id);
+              ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:207:2: error: offsetof of incomplete type 'struct sdw_device_id'
+        DEVID_FIELD(sdw_device_id, mfg_id);
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:7:32: note: expanded from macro 'DEVID_FIELD'
+        DEFINE(OFF_##devid##_##field, offsetof(struct devid, field))
+                                      ^        ~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/stddef.h:17:32: note: expanded from macro 'offsetof'
+#define offsetof(TYPE, MEMBER)  __compiler_offsetof(TYPE, MEMBER)
+                                ^                   ~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/compiler-gcc.h:191:2: note: expanded from macro '__compiler_offsetof'
+        __builtin_offsetof(a, b)
+        ^                  ~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/kbuild.h:6:62: note: expanded from macro 'DEFINE'
+        asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i" (val))
+                                                                    ^~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:206:8: note: forward declaration of 'struct sdw_device_id'
+        DEVID(sdw_device_id);
+              ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:208:2: error: offsetof of incomplete type 'struct sdw_device_id'
+        DEVID_FIELD(sdw_device_id, part_id);
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:7:32: note: expanded from macro 'DEVID_FIELD'
+        DEFINE(OFF_##devid##_##field, offsetof(struct devid, field))
+                                      ^        ~~~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/stddef.h:17:32: note: expanded from macro 'offsetof'
+#define offsetof(TYPE, MEMBER)  __compiler_offsetof(TYPE, MEMBER)
+                                ^                   ~~~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/compiler-gcc.h:191:2: note: expanded from macro '__compiler_offsetof'
+        __builtin_offsetof(a, b)
+        ^                  ~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/kbuild.h:6:62: note: expanded from macro 'DEFINE'
+        asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i" (val))
+                                                                    ^~~
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:206:8: note: forward declaration of 'struct sdw_device_id'
+        DEVID(sdw_device_id);
+              ^
+3 errors generated.
+make[3]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/Makefile.build:155: scripts/mod/devicetable-offsets.s] Error 1
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/modpost.o
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/arch/arm64/kernel/asm-offsets.c:22:
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mm.h:10:
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/gfp.h:6:
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1169:23: error: use of undeclared identifier 'CONFIG_ARM64_PA_BITS'
+        if (unlikely(root >= NR_SECTION_ROOTS))
+                             ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1156:39: note: expanded from macro 'NR_SECTION_ROOTS'
+#define NR_SECTION_ROOTS        DIV_ROUND_UP(NR_MEM_SECTIONS, SECTIONS_PER_ROOT)
+                                             ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1092:34: note: expanded from macro 'NR_MEM_SECTIONS'
+#define NR_MEM_SECTIONS         (1UL << SECTIONS_SHIFT)
+                                        ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/page-flags-layout.h:31:25: note: expanded from macro 'SECTIONS_SHIFT'
+#define SECTIONS_SHIFT  (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+                         ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/arch/arm64/include/asm/sparsemem.h:20:26: note: expanded from macro 'MAX_PHYSMEM_BITS'
+#define MAX_PHYSMEM_BITS        CONFIG_ARM64_PA_BITS
+                                ^
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/arch/arm64/kernel/asm-offsets.c:22:
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mm.h:10:
+In file included from /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/gfp.h:6:
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1255:32: error: use of undeclared identifier 'CONFIG_ARM64_PA_BITS'
+        if (pfn_to_section_nr(pfn) >= NR_MEM_SECTIONS)
+                                      ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1092:34: note: expanded from macro 'NR_MEM_SECTIONS'
+#define NR_MEM_SECTIONS         (1UL << SECTIONS_SHIFT)
+                                        ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/page-flags-layout.h:31:25: note: expanded from macro 'SECTIONS_SHIFT'
+#define SECTIONS_SHIFT  (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+                         ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/arch/arm64/include/asm/sparsemem.h:20:26: note: expanded from macro 'MAX_PHYSMEM_BITS'
+#define MAX_PHYSMEM_BITS        CONFIG_ARM64_PA_BITS
+                                ^
+2 errors generated.
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/./Kbuild:56: arch/arm64/kernel/asm-offsets.s] Error 1
+make[2]: Target '__build' not remade because of errors.
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:1286: prepare0] Error 2
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTCC  scripts/selinux/genheaders/genheaders
+  HOSTCC  scripts/selinux/mdp/mdp
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/pnmtologo
+make[3]: Target '__build' not remade because of errors.
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/Makefile.build:674: scripts/mod] Error 2
+  HOSTCC  scripts/sortextable
+  HOSTCC  scripts/asn1_compiler
+  HOSTCC  scripts/extract-cert
+make[2]: Target '__build' not remade because of errors.
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:615: scripts] Error 2
+make[1]: Target '_all' not remade because of errors.
+make[1]: Leaving directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+make: *** [Makefile:153: sub-make] Error 2
+make: Target '_all' not remade because of errors.

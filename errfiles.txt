@@ -1,0 +1,2 @@
+include/linux/mmzone.h
+scripts/mod/devicetable-offsets.c

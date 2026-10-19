@@ -1,0 +1,7 @@
+arch/arm64/include/asm/sparsemem.h
+include/linux/compiler-gcc.h
+include/linux/kbuild.h
+include/linux/mmzone.h
+include/linux/page-flags-layout.h
+include/linux/stddef.h
+scripts/mod/devicetable-offsets.c

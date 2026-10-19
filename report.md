@@ -245,3 +245,121 @@ M  scripts/kconfig/lxdialog/check-lxdialog.sh
 M  scripts/kconfig/mconf.c
 M  scripts/kconfig/util.c
 ```
+
+## Build probe
+
+- build exit code: 2
+- error-line matches: 11
+- object compiles seen: 4
+- reached the link: 0
+- image produced: 0
+
+### head of build log (first 40 lines)
+```
+[1;32m[*] =================================================[0m
+[1;32m[*] Building Pox[0m
+[1;32m[*] Version:      1.0.0-Beta[0m
+[1;32m[*] Version Name: Granite (Rock-Solid Stability Edition)[0m
+[1;32m[*] Branch:       main[0m
+[1;32m[*] Commit ID:    8b9bb78[0m
+[1;32m[*] Device:       Redmi Note 8 Pro (begonia)[0m
+[1;32m[*] Maintainer:   TXO R (Pox Project)[0m
+[1;32m[*] Localversion: -Pox-1.0.0-Beta-Granite-8b9bb78[0m
+[1;32m[*] Defconfig:    begonia_user_defconfig[0m
+[1;32m[*] Output Dir:   /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build[0m
+[1;32m[*] Object Dir:   /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out[0m
+[1;32m[*] Jobs:         4[0m
+[1;32m[*] Toolchain:    /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/kerdevdep[0m
+[1;32m[*] =================================================[0m
+[1;32m[*] Using ccache (cache dir: /home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/.ccache)[0m
+[1;32m[*] Configuring with begonia_user_defconfig ...[0m
+make[1]: Entering directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+  HOSTCC  scripts/basic/fixdep
+  GEN     ./Makefile
+  HOSTCC  scripts/kconfig/conf.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/zconf.lex.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+arch/arm64/configs/begonia_user_defconfig:5259:warning: override: reassigning to symbol REISERFS_FS
+arch/arm64/configs/begonia_user_defconfig:5260:warning: override: reassigning to symbol JFS_FS
+arch/arm64/configs/begonia_user_defconfig:5261:warning: override: reassigning to symbol XFS_FS
+arch/arm64/configs/begonia_user_defconfig:5262:warning: override: reassigning to symbol BTRFS_FS
+arch/arm64/configs/begonia_user_defconfig:5263:warning: override: reassigning to symbol NILFS2_FS
+arch/arm64/configs/begonia_user_defconfig:5264:warning: override: reassigning to symbol F2FS_FS_COMPRESSION
+arch/arm64/configs/begonia_user_defconfig:5265:warning: override: reassigning to symbol AUTOFS4_FS
+arch/arm64/configs/begonia_user_defconfig:5266:warning: override: reassigning to symbol UDF_FS
+arch/arm64/configs/begonia_user_defconfig:5267:warning: override: reassigning to symbol ADFS_FS
+arch/arm64/configs/begonia_user_defconfig:5268:warning: override: reassigning to symbol AFFS_FS
+arch/arm64/configs/begonia_user_defconfig:5269:warning: override: reassigning to symbol ECRYPT_FS
+arch/arm64/configs/begonia_user_defconfig:5270:warning: override: reassigning to symbol HFS_FS
+arch/arm64/configs/begonia_user_defconfig:5271:warning: override: reassigning to symbol HFSPLUS_FS
+arch/arm64/configs/begonia_user_defconfig:5272:warning: override: reassigning to symbol BEFS_FS
+arch/arm64/configs/begonia_user_defconfig:5273:warning: override: reassigning to symbol BFS_FS
+```
+
+### first 80 error lines
+```
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:206:2: error: invalid application of 'sizeof' to an incomplete type 'struct sdw_device_id'
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:207:2: error: offsetof of incomplete type 'struct sdw_device_id'
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/mod/devicetable-offsets.c:208:2: error: offsetof of incomplete type 'struct sdw_device_id'
+make[3]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/Makefile.build:155: scripts/mod/devicetable-offsets.s] Error 1
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1169:23: error: use of undeclared identifier 'CONFIG_ARM64_PA_BITS'
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/mmzone.h:1255:32: error: use of undeclared identifier 'CONFIG_ARM64_PA_BITS'
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/./Kbuild:56: arch/arm64/kernel/asm-offsets.s] Error 1
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:1286: prepare0] Error 2
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/Makefile.build:674: scripts/mod] Error 2
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:615: scripts] Error 2
+make: *** [Makefile:153: sub-make] Error 2
+```
+
+### distinct error messages (top 40)
+```
+      2 use of undeclared identifier 'CONFIG_ARM64_PA_BITS'
+      2 offsetof of incomplete type 'struct sdw_device_id'
+      1 invalid application of 'sizeof' to an incomplete type 'struct sdw_device_id'
+```
+
+### tail of build log
+```
+#define NR_MEM_SECTIONS         (1UL << SECTIONS_SHIFT)
+                                        ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/include/linux/page-flags-layout.h:31:25: note: expanded from macro 'SECTIONS_SHIFT'
+#define SECTIONS_SHIFT  (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+                         ^
+/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/arch/arm64/include/asm/sparsemem.h:20:26: note: expanded from macro 'MAX_PHYSMEM_BITS'
+#define MAX_PHYSMEM_BITS        CONFIG_ARM64_PA_BITS
+                                ^
+2 errors generated.
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/./Kbuild:56: arch/arm64/kernel/asm-offsets.s] Error 1
+make[2]: Target '__build' not remade because of errors.
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:1286: prepare0] Error 2
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTCC  scripts/selinux/genheaders/genheaders
+  HOSTCC  scripts/selinux/mdp/mdp
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+mali MTK evironment, building r25p0 DDK
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY := y
+mtk-Kbuild CONFIG_MALI_PLATFORM_THIRDPARTY_NAME := "mt6785"
+*GPU defined GPU BM QoS 2.0
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/pnmtologo
+make[3]: Target '__build' not remade because of errors.
+make[2]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/scripts/Makefile.build:674: scripts/mod] Error 2
+  HOSTCC  scripts/sortextable
+  HOSTCC  scripts/asn1_compiler
+  HOSTCC  scripts/extract-cert
+make[2]: Target '__build' not remade because of errors.
+make[1]: *** [/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/Makefile:615: scripts] Error 2
+make[1]: Target '_all' not remade because of errors.
+make[1]: Leaving directory '/home/runner/work/pox-kernel-begonia/pox-kernel-begonia/build/out'
+make: *** [Makefile:153: sub-make] Error 2
+make: Target '_all' not remade because of errors.
+```
