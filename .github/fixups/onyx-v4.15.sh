@@ -161,6 +161,22 @@ fi
 #                               tcf_chain_head_change_t and struct tcf_block::q
 #                               which our net/sched core does not have.
 #
+#  include/linux/trace.h        upstream v4.15 added a third parameter to
+#                               struct trace_export::write (ours is
+#                               `void (*write)(const void *, unsigned int)`,
+#                               upstream's `... (struct trace_export *, const void *,
+#                               unsigned int)`); our kernel/trace/trace.c calls it
+#                               with two arguments.
+#  include/linux/fwnode.h       upstream changed struct fwnode_operations::get to
+#                               return a struct fwnode_handle *; our
+#                               drivers/of/property.c installs a void-returning
+#                               of_fwnode_get.
+#  fs/xfs/Makefile              the adopted Makefile builds xfs_iext_tree.o, a file
+#                               that does not exist in our tree at all, and which
+#                               implements upstream's new extent-list B-tree.  Our
+#                               XFS is the earlier (self-consistent) generation, so
+#                               the objects it needs are the ones our Makefile lists.
+#
 #  The remaining entries were not guessed either: they are exactly the files
 #  clang itself names in a "note: previous definition is here" / "note: 'x'
 #  declared here" / "note: expanded from macro" line that explains one of the
@@ -203,6 +219,9 @@ include/linux/configfs.h
 include/net/netfilter/nf_conntrack_l4proto.h
 arch/arm64/include/asm/irqflags.h
 arch/arm64/include/asm/daifflags.h
+include/linux/trace.h
+include/linux/fwnode.h
+fs/xfs/Makefile
 "
 for f in $REVERT_TO_OURS; do
   if ! git cat-file -e "origin/onyx:$f" 2>/dev/null; then
