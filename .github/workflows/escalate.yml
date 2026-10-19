@@ -52,6 +52,11 @@ on:
         required: true
         default: false
         type: boolean
+      extra_flags:
+        description: 'Extra flags handed to make via build.sh EXTRA_FLAGS (e.g. -k to keep going)'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -198,8 +203,8 @@ jobs:
             # progress).  Files only we touched keep ours.  Files both touched
             # keep OURS -- these are the coupled pairs, so no half-pair can form
             # and no MediaTek hook is dropped.
-            git diff --name-only -z "$MERGE_BASE" HEAD  | tr '\0' '\n' | sort -u > v_changed.txt
-            git diff --name-only -z "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_changed.txt
+            git diff --no-renames --name-only -z "$MERGE_BASE" HEAD  | tr '\0' '\n' | sort -u > v_changed.txt
+            git diff --no-renames --name-only -z "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_changed.txt
             comm -12 v_changed.txt u_changed.txt > both.txt
             git ls-tree -r -z --name-only HEAD | tr '\0' '\n' | sort -u > head_files.txt
             comm -12 both.txt head_files.txt > keep_ours.txt
@@ -214,7 +219,7 @@ jobs:
             # "obj-$(CONFIG_PM_OPP) += opp/" and the directory is still needed.
             # The old tree is not built twice, because our drivers/Makefile has
             # no "opp/" entry, so only drivers/base/power/opp/ is compiled.
-            git diff --name-only -z --diff-filter=D "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_deleted.txt
+            git diff --no-renames --name-only -z --diff-filter=D "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_deleted.txt
             comm -12 u_deleted.txt head_files.txt > keep_deleted.txt
             xargs -a keep_deleted.txt -d '\n' -r git checkout HEAD --
             echo "upstream-deleted=$(grep -c . u_deleted.txt) restored=$(grep -c . keep_deleted.txt)"
@@ -333,7 +338,7 @@ jobs:
         run: |
           set +e
           bash kerdevdep/setup_kerdevdep.sh > setup.log 2>&1
-          ./build.sh kernel > build_log.txt 2>&1
+          EXTRA_FLAGS="${{ inputs.extra_flags }}" ./build.sh kernel > build_log.txt 2>&1
           RC=$?
           echo "build_rc=$RC" >> $GITHUB_OUTPUT
           ERE='error:|\bError [0-9]+|fatal error|\*\*\*|No such file or directory|undefined reference|not declared'
