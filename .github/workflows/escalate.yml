@@ -392,6 +392,14 @@ jobs:
             echo ""
             echo "- build exit code: $RC"
             echo "- error-line matches: $ERRORS"
+            # How far the build actually got.  A build that dies in prepare0
+            # (arch/arm64/kernel/asm-offsets.s, which almost everything else depends
+            # on) reports a tiny error count while having compiled almost nothing,
+            # and that is very easy to misread as "nearly clean".  Record the depth
+            # explicitly so the numbers are always read in context.
+            echo "- object compiles seen: $(grep -cE '^  CC ' build_log.txt)"
+            echo "- reached the link: $(grep -cE '^  LD +vmlinux' build_log.txt)"
+            echo "- image produced: $(grep -c 'Image is ready' build_log.txt)"
             echo ""
             echo "### head of build log (first 40 lines)"
             echo '```'
@@ -619,6 +627,9 @@ jobs:
             echo "- adopted upstream files reverted: $(grep -c . selfheal_reverts.txt)"
             echo "- final error lines: $(grep -c ' error: ' build_log.txt)"
             echo "- final unresolved symbols: $(grep -c 'undefined reference to' build_log.txt)"
+            echo "- final object compiles seen: $(grep -cE '^  CC ' build_log.txt)"
+            echo "- final reached the link: $(grep -cE '^  LD +vmlinux' build_log.txt)"
+            echo "- final image produced: $(grep -c 'Image is ready' build_log.txt)"
             echo ""
             echo '```'
             sort -u selfheal_reverts.txt | head -120
