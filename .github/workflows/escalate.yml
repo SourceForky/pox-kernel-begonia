@@ -373,6 +373,84 @@ jobs:
           } >> report.md
           tail -60 build_log.txt
 
+      - name: Diagnose error provenance
+        if: inputs.attempt_build
+        run: |
+          set +e
+          [ -f build_log.txt ] || exit 0
+          # Change sets: who touched what, relative to the merge base.
+          git diff --no-renames --name-only "$MERGE_BASE" "origin/${{ inputs.base_branch }}" | sort -u > d_ours.txt
+          git diff --no-renames --name-only "$MERGE_BASE" "$UP" | sort -u > d_up.txt
+          comm -12 d_ours.txt d_up.txt   > d_both.txt
+          comm -23 d_up.txt   d_ours.txt > d_uponly.txt
+          comm -23 d_ours.txt d_up.txt   > d_oursonly.txt
+          { awk '{print $0"\tOURS"}'      d_both.txt
+            awk '{print $0"\tUPSTREAM"}'  d_uponly.txt
+            awk '{print $0"\tOURS-ONLY"}' d_oursonly.txt
+          } | sort -u > d_map.txt
+          side_of() { s=$(awk -v f="$1" '$1==f{print $2; exit}' d_map.txt); [ -n "$s" ] && echo "$s" || echo SAME; }
+
+          # file<TAB>message for every compiler error
+          grep -E ' error: ' build_log.txt \
+            | sed -E 's#^.*/pox-kernel-begonia/##' \
+            | sed -E 's#^([^:]+:[0-9]+:[0-9]+): error: #\1\t#' \
+            | grep -P '\t' > errs.txt
+          awk -F'\t' '{c[$1"\x01"$2]++} END{for(k in c) print c[k]"\t"k}' errs.txt | sort -rn > errgroups.txt
+
+          {
+            echo ""
+            echo "## Error provenance diagnosis"
+            echo ""
+            echo "- paths we changed since merge base:  $(grep -c . d_ours.txt)"
+            echo "- paths upstream changed:             $(grep -c . d_up.txt)"
+            echo "- paths BOTH changed (kept ours):     $(grep -c . d_both.txt)"
+            echo "- paths only upstream changed (adopted): $(grep -c . d_uponly.txt)"
+            echo "- paths only we changed:              $(grep -c . d_oursonly.txt)"
+            echo ""
+            echo "### top 60 error groups with the SIDE of the file that fails"
+            echo ""
+            echo "| count | side | file | message |"
+            echo "| --- | --- | --- | --- |"
+            head -60 errgroups.txt | while IFS=$'\t' read -r n key; do
+              f="${key%%$'\x01'*}"; m="${key#*$'\x01'}"
+              printf '| %s | %s | `%s` | %s |\n' "$n" "$(side_of "$f")" "$f" "$(echo "$m" | cut -c1-110)"
+            done
+            echo ""
+            echo "### totals by side"
+            echo ""
+            echo '```'
+            head -400 errgroups.txt | while IFS=$'\t' read -r n key; do
+              f="${key%%$'\x01'*}"; echo "$n $(side_of "$f")"
+            done | awk '{t[$2]+=$1} END{for(s in t) printf "%-12s %d error lines\n", s, t[s]}' | sort -k2 -rn
+            echo '```'
+            echo ""
+            echo "### symbols used but not declared -> where upstream v4.15 defines them"
+            echo ""
+            echo '```'
+            { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+              sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+              sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+            } | sort | uniq -c | sort -rn | head -45 | while read -r cnt sym; do
+              defs=""
+              for df in $(git grep -l -w "$sym" "$UP" -- 'include' 'block' 'arch/arm64' 'kernel' 2>/dev/null | head -3); do
+                defs="$defs $df[$(side_of "$df")]"
+              done
+              printf '%-6s %-34s <=%s\n' "$cnt" "$sym" "$defs"
+            done
+            echo '```'
+            echo ""
+            echo "### no-member errors -> where upstream v4.15 has that member"
+            echo ""
+            echo '```'
+            sed -n "s/.*no member named '\([A-Za-z_][A-Za-z0-9_]*\)' in '\(struct [A-Za-z_][A-Za-z0-9_]*\)'.*/\2 :: \1/p" build_log.txt \
+              | sort | uniq -c | sort -rn | head -30 | while read -r cnt rest; do
+                st="${rest%% :: *}"; mem="${rest#* :: }"; stn="${st##struct }"
+                f=$(git grep -l -w "struct $stn {" "$UP" -- 'include' 2>/dev/null | head -1)
+                printf '%-6s %-28s member %-26s struct-defined-in=%s[%s]\n' "$cnt" "$stn" "$mem" "$f" "$(side_of "$f")"
+              done
+            echo '```'
+          } | tee -a report.md > diagnosis.txt
+
       - name: Push resulting branch
         if: inputs.push_result
         run: |
@@ -393,6 +471,7 @@ jobs:
             pick_theirs.txt
             build_log.txt
             fixup.log
+            diagnosis.txt
           retention-days: 30
 
       - name: Job summary
