@@ -208,3 +208,69 @@ arch/powerpc/mm/mmu_context_book3s64.c
 arch/powerpc/mm/slice.c
 arch/powerpc/mm/tlb-radix.c
 ```
+resolved with: both-ours (kept=5966 dropped=56 restored_deleted=290)
+
+## Fixups (.github/fixups/onyx-v4.15.sh)
+
+```
+  [+] reverted to ours: fs/xfs/xfs_itable.c
+  [+] reverted to ours: fs/xfs/xfs_itable.h
+  [+] reverted to ours: fs/xfs/xfs_linux.h
+  [+] reverted to ours: fs/xfs/xfs_symlink.c
+  [+] reverted to ours: include/linux/ioport.h
+  [+] reverted to ours: include/linux/pinctrl/consumer.h
+  [+] reverted to ours: include/linux/sched/cputime.h
+  [+] reverted to ours: include/net/netfilter/ipv4/nf_conntrack_ipv4.h
+  [+] reverted to ours: include/net/netfilter/ipv6/nf_conntrack_ipv6.h
+  [+] reverted to ours: include/trace/events/dma_fence.h
+  [+] reverted to ours: kernel/audit_tree.c
+  [+] reverted to ours: kernel/irq/autoprobe.c
+  [+] reverted to ours: kernel/irq/spurious.c
+  [+] reverted to ours: kernel/sched/wait_bit.c
+  [+] reverted to ours: mm/page_isolation.c
+  [+] reverted to ours: net/bridge/br_ioctl.c
+  [+] reverted to ours: net/bridge/br_netlink_tunnel.c
+  [+] reverted to ours: net/bridge/br_stp.c
+  [+] reverted to ours: net/bridge/br_stp_if.c
+  [+] reverted to ours: net/bridge/br_stp_timer.c
+  [+] reverted to ours: net/ipv4/netfilter/nf_conntrack_proto_icmp.c
+  [+] reverted to ours: net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_generic.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_gre.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_udp.c
+  [+] reverted to ours: net/sched/sch_htb.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_dir2.h
+  [+] br_private.h: adding neigh_suppress_enabled to struct net_bridge
+    inserted 33 bytes at the end of struct net_bridge
+===== fixups done =====
+M  arch/arm64/include/asm/irqflags.h
+M  arch/arm64/include/asm/spinlock_types.h
+M  arch/arm64/lib/delay.c
+M  block/bfq-iosched.h
+M  drivers/base/property.c
+M  drivers/clk/clk-gpio.c
+M  drivers/hwtracing/stm/policy.c
+M  drivers/mmc/core/host.h
+M  drivers/of/of_private.h
+M  drivers/pinctrl/core.h
+M  drivers/rtc/class.c
+M  drivers/scsi/scsi_priv.h
+M  drivers/target/target_core_configfs.c
+M  fs/btrfs/backref.h
+M  fs/btrfs/delayed-ref.h
+M  fs/btrfs/lzo.c
+M  fs/btrfs/send.h
+M  fs/btrfs/sysfs.h
+M  fs/btrfs/zlib.c
+M  fs/btrfs/zstd.c
+M  fs/configfs/item.c
+M  fs/ecryptfs/ecryptfs_kernel.h
+M  fs/notify/group.c
+M  fs/udf/dir.c
+M  fs/xfs/Makefile
+M  fs/xfs/libxfs/xfs_bmap.h
+M  fs/xfs/libxfs/xfs_bmap_btree.c
+M  fs/xfs/libxfs/xfs_bmap_btree.h
+M  fs/xfs/libxfs/xfs_btree.c
+M  fs/xfs/libxfs/xfs_btree.h
+```

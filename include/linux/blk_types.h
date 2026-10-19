@@ -374,4 +374,5 @@ struct blk_rq_stat {
 	u64 batch;
 };
 
+typedef __u32 __bitwise blk_mq_req_flags_t;
 #endif /* __LINUX_BLK_TYPES_H */

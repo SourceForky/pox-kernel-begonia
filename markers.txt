@@ -1,0 +1,4 @@
+drivers/gpu/drm/i915/intel_guc_fw.c
+include/linux/usb/tcpm.h
+mm/kasan/common.c
+sound/soc/soc-acpi.c

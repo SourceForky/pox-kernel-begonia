@@ -73,6 +73,7 @@ static int udp_packet(struct nf_conn *ct,
 		      const struct sk_buff *skb,
 		      unsigned int dataoff,
 		      enum ip_conntrack_info ctinfo,
+		      u_int8_t pf,
 		      unsigned int *timeouts)
 {
 	/* If we've seen traffic both ways, this is some kind of UDP
@@ -98,12 +99,6 @@ static bool udp_new(struct nf_conn *ct, const struct sk_buff *skb,
 }
 
 #ifdef CONFIG_NF_CT_PROTO_UDPLITE
-static void udplite_error_log(const struct sk_buff *skb, struct net *net,
-			      u8 pf, const char *msg)
-{
-	nf_l4proto_log_invalid(skb, net, pf, IPPROTO_UDPLITE, "%s", msg);
-}
-
 static int udplite_error(struct net *net, struct nf_conn *tmpl,
 			 struct sk_buff *skb,
 			 unsigned int dataoff,
@@ -117,7 +112,9 @@ static int udplite_error(struct net *net, struct nf_conn *tmpl,
 	/* Header is too small? */
 	hdr = skb_header_pointer(skb, dataoff, sizeof(_hdr), &_hdr);
 	if (!hdr) {
-		udplite_error_log(skb, net, pf, "short packet");
+		if (LOG_INVALID(net, IPPROTO_UDPLITE))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				      "nf_ct_udplite: short packet ");
 		return -NF_ACCEPT;
 	}
 
@@ -125,13 +122,17 @@ static int udplite_error(struct net *net, struct nf_conn *tmpl,
 	if (cscov == 0) {
 		cscov = udplen;
 	} else if (cscov < sizeof(*hdr) || cscov > udplen) {
-		udplite_error_log(skb, net, pf, "invalid checksum coverage");
+		if (LOG_INVALID(net, IPPROTO_UDPLITE))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				      "nf_ct_udplite: invalid checksum coverage ");
 		return -NF_ACCEPT;
 	}
 
 	/* UDPLITE mandates checksums */
 	if (!hdr->check) {
-		udplite_error_log(skb, net, pf, "checksum missing");
+		if (LOG_INVALID(net, IPPROTO_UDPLITE))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				      "nf_ct_udplite: checksum missing ");
 		return -NF_ACCEPT;
 	}
 
@@ -139,19 +140,15 @@ static int udplite_error(struct net *net, struct nf_conn *tmpl,
 	if (net->ct.sysctl_checksum && hooknum == NF_INET_PRE_ROUTING &&
 	    nf_checksum_partial(skb, hooknum, dataoff, cscov, IPPROTO_UDP,
 				pf)) {
-		udplite_error_log(skb, net, pf, "bad checksum");
+		if (LOG_INVALID(net, IPPROTO_UDPLITE))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				      "nf_ct_udplite: bad UDPLite checksum ");
 		return -NF_ACCEPT;
 	}
 
 	return NF_ACCEPT;
 }
 #endif
-
-static void udp_error_log(const struct sk_buff *skb, struct net *net,
-			  u8 pf, const char *msg)
-{
-	nf_l4proto_log_invalid(skb, net, pf, IPPROTO_UDP, "%s", msg);
-}
 
 static int udp_error(struct net *net, struct nf_conn *tmpl, struct sk_buff *skb,
 		     unsigned int dataoff,
@@ -165,13 +162,17 @@ static int udp_error(struct net *net, struct nf_conn *tmpl, struct sk_buff *skb,
 	/* Header is too small? */
 	hdr = skb_header_pointer(skb, dataoff, sizeof(_hdr), &_hdr);
 	if (hdr == NULL) {
-		udp_error_log(skb, net, pf, "short packet");
+		if (LOG_INVALID(net, IPPROTO_UDP))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				      "nf_ct_udp: short packet ");
 		return -NF_ACCEPT;
 	}
 
 	/* Truncated/malformed packets */
 	if (ntohs(hdr->len) > udplen || ntohs(hdr->len) < sizeof(*hdr)) {
-		udp_error_log(skb, net, pf, "truncated/malformed packet");
+		if (LOG_INVALID(net, IPPROTO_UDP))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				"nf_ct_udp: truncated/malformed packet ");
 		return -NF_ACCEPT;
 	}
 
@@ -185,7 +186,9 @@ static int udp_error(struct net *net, struct nf_conn *tmpl, struct sk_buff *skb,
 	 * FIXME: Source route IP option packets --RR */
 	if (net->ct.sysctl_checksum && hooknum == NF_INET_PRE_ROUTING &&
 	    nf_checksum(skb, hooknum, dataoff, IPPROTO_UDP, pf)) {
-		udp_error_log(skb, net, pf, "bad checksum");
+		if (LOG_INVALID(net, IPPROTO_UDP))
+			nf_log_packet(net, pf, 0, skb, NULL, NULL, NULL,
+				"nf_ct_udp: bad UDP checksum ");
 		return -NF_ACCEPT;
 	}
 

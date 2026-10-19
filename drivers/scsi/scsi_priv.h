@@ -50,16 +50,15 @@ enum {
 	SCSI_DEVINFO_SPI,
 };
 
-extern blist_flags_t scsi_get_device_flags(struct scsi_device *sdev,
-					   const unsigned char *vendor,
-					   const unsigned char *model);
-extern blist_flags_t scsi_get_device_flags_keyed(struct scsi_device *sdev,
-						 const unsigned char *vendor,
-						 const unsigned char *model,
-						 int key);
+extern int scsi_get_device_flags(struct scsi_device *sdev,
+				 const unsigned char *vendor,
+				 const unsigned char *model);
+extern int scsi_get_device_flags_keyed(struct scsi_device *sdev,
+				       const unsigned char *vendor,
+				       const unsigned char *model, int key);
 extern int scsi_dev_info_list_add_keyed(int compatible, char *vendor,
 					char *model, char *strflags,
-					blist_flags_t flags, int key);
+					int flags, int key);
 extern int scsi_dev_info_list_del_keyed(char *vendor, char *model, int key);
 extern int scsi_dev_info_add_list(int key, const char *name);
 extern int scsi_dev_info_remove_list(int key);
@@ -178,10 +177,10 @@ extern struct async_domain scsi_sd_probe_domain;
 
 /* scsi_dh.c */
 #ifdef CONFIG_SCSI_DH
-void scsi_dh_add_device(struct scsi_device *sdev);
+int scsi_dh_add_device(struct scsi_device *sdev);
 void scsi_dh_release_device(struct scsi_device *sdev);
 #else
-static inline void scsi_dh_add_device(struct scsi_device *sdev) { }
+static inline int scsi_dh_add_device(struct scsi_device *sdev) { return 0; }
 static inline void scsi_dh_release_device(struct scsi_device *sdev) { }
 #endif
 static inline void scsi_dh_remove_device(struct scsi_device *sdev) { }

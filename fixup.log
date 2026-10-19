@@ -1,0 +1,134 @@
+===== v4.15 fixups =====
+  [+] mod_devicetable.h: adding upstream tb_service_id definition
+    inserted 910 bytes
+  [+] reverted to ours: arch/arm64/include/asm/spinlock_types.h
+  [+] reverted to ours: include/asm-generic/qrwlock.h
+  [+] reverted to ours: include/asm-generic/qrwlock_types.h
+  [+] reverted to ours: kernel/locking/qrwlock.c
+  [+] reverted to ours: include/linux/jump_label_ratelimit.h
+  [+] blk_types.h: porting blk_mq_req_flags_t from upstream
+    ported 44 bytes
+  [+] reverted to ours: include/linux/nfs_fs_sb.h
+  [+] reverted to ours: include/linux/blk-mq.h
+  [+] reverted to ours: include/linux/iomap.h
+  [+] reverted to ours: fs/btrfs/delayed-ref.h
+  [+] reverted to ours: fs/btrfs/backref.h
+  [+] reverted to ours: fs/btrfs/sysfs.h
+  [+] reverted to ours: include/scsi/scsi_devinfo.h
+  [+] reverted to ours: drivers/scsi/scsi_priv.h
+  [+] reverted to ours: include/linux/blk-cgroup.h
+  [+] reverted to ours: include/net/pkt_cls.h
+  [+] reverted to ours: include/linux/gpio/driver.h
+  [+] reverted to ours: include/linux/gpio/machine.h
+  [+] reverted to ours: include/linux/of_gpio.h
+  [+] reverted to ours: include/linux/irqdomain.h
+  [+] reverted to ours: include/linux/page-isolation.h
+  [+] reverted to ours: include/linux/rtnetlink.h
+  [+] reverted to ours: include/linux/iio/iio.h
+  [+] reverted to ours: fs/ecryptfs/ecryptfs_kernel.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_types.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_bmap.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_bmap_btree.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_ialloc.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_inode_fork.h
+  [+] reverted to ours: fs/xfs/xfs_inode.h
+  [+] reverted to ours: fs/xfs/xfs_bmap_util.h
+  [+] reverted to ours: drivers/mmc/core/host.h
+  [+] reverted to ours: drivers/of/of_private.h
+  [+] reverted to ours: net/bridge/br_private_tunnel.h
+  [+] reverted to ours: block/bfq-iosched.h
+  [+] reverted to ours: include/linux/configfs.h
+  [+] reverted to ours: include/net/netfilter/nf_conntrack_l4proto.h
+  [+] reverted to ours: arch/arm64/include/asm/irqflags.h
+  [-] not in ours, skipped: arch/arm64/include/asm/daifflags.h
+  [+] reverted to ours: include/linux/trace.h
+  [+] reverted to ours: include/linux/fwnode.h
+  [+] reverted to ours: fs/xfs/Makefile
+  [+] reverted to ours: fs/xfs/libxfs/xfs_bmap_btree.c
+  [+] reverted to ours: fs/xfs/xfs_buf.h
+  [+] reverted to ours: arch/arm64/lib/delay.c
+  [+] reverted to ours: mm/sparse-vmemmap.c
+  [+] reverted to ours: drivers/base/property.c
+  [+] reverted to ours: drivers/clk/clk-gpio.c
+  [+] reverted to ours: drivers/hwtracing/stm/policy.c
+  [+] reverted to ours: drivers/pinctrl/core.h
+  [+] reverted to ours: drivers/rtc/class.c
+  [+] reverted to ours: drivers/target/target_core_configfs.c
+  [+] reverted to ours: fs/btrfs/lzo.c
+  [+] reverted to ours: fs/btrfs/send.h
+  [+] reverted to ours: fs/btrfs/zlib.c
+  [+] reverted to ours: fs/btrfs/zstd.c
+  [+] reverted to ours: fs/configfs/item.c
+  [+] reverted to ours: fs/notify/group.c
+  [+] reverted to ours: fs/udf/dir.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_btree.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_btree.h
+  [+] reverted to ours: fs/xfs/libxfs/xfs_dir2.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_ialloc.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_inode_fork.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_log_format.h
+  [+] reverted to ours: fs/xfs/xfs_dir2_readdir.c
+  [+] reverted to ours: fs/xfs/xfs_error.h
+  [+] reverted to ours: fs/xfs/xfs_icache.h
+  [+] reverted to ours: fs/xfs/xfs_inode_item.h
+  [+] reverted to ours: fs/xfs/xfs_iomap.c
+  [+] reverted to ours: fs/xfs/xfs_itable.c
+  [+] reverted to ours: fs/xfs/xfs_itable.h
+  [+] reverted to ours: fs/xfs/xfs_linux.h
+  [+] reverted to ours: fs/xfs/xfs_symlink.c
+  [+] reverted to ours: include/linux/ioport.h
+  [+] reverted to ours: include/linux/pinctrl/consumer.h
+  [+] reverted to ours: include/linux/sched/cputime.h
+  [+] reverted to ours: include/net/netfilter/ipv4/nf_conntrack_ipv4.h
+  [+] reverted to ours: include/net/netfilter/ipv6/nf_conntrack_ipv6.h
+  [+] reverted to ours: include/trace/events/dma_fence.h
+  [+] reverted to ours: kernel/audit_tree.c
+  [+] reverted to ours: kernel/irq/autoprobe.c
+  [+] reverted to ours: kernel/irq/spurious.c
+  [+] reverted to ours: kernel/sched/wait_bit.c
+  [+] reverted to ours: mm/page_isolation.c
+  [+] reverted to ours: net/bridge/br_ioctl.c
+  [+] reverted to ours: net/bridge/br_netlink_tunnel.c
+  [+] reverted to ours: net/bridge/br_stp.c
+  [+] reverted to ours: net/bridge/br_stp_if.c
+  [+] reverted to ours: net/bridge/br_stp_timer.c
+  [+] reverted to ours: net/ipv4/netfilter/nf_conntrack_proto_icmp.c
+  [+] reverted to ours: net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_generic.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_gre.c
+  [+] reverted to ours: net/netfilter/nf_conntrack_proto_udp.c
+  [+] reverted to ours: net/sched/sch_htb.c
+  [+] reverted to ours: fs/xfs/libxfs/xfs_dir2.h
+  [+] br_private.h: adding neigh_suppress_enabled to struct net_bridge
+    inserted 33 bytes at the end of struct net_bridge
+===== fixups done =====
+M  arch/arm64/include/asm/irqflags.h
+M  arch/arm64/include/asm/spinlock_types.h
+M  arch/arm64/lib/delay.c
+M  block/bfq-iosched.h
+M  drivers/base/property.c
+M  drivers/clk/clk-gpio.c
+M  drivers/hwtracing/stm/policy.c
+M  drivers/mmc/core/host.h
+M  drivers/of/of_private.h
+M  drivers/pinctrl/core.h
+M  drivers/rtc/class.c
+M  drivers/scsi/scsi_priv.h
+M  drivers/target/target_core_configfs.c
+M  fs/btrfs/backref.h
+M  fs/btrfs/delayed-ref.h
+M  fs/btrfs/lzo.c
+M  fs/btrfs/send.h
+M  fs/btrfs/sysfs.h
+M  fs/btrfs/zlib.c
+M  fs/btrfs/zstd.c
+M  fs/configfs/item.c
+M  fs/ecryptfs/ecryptfs_kernel.h
+M  fs/notify/group.c
+M  fs/udf/dir.c
+M  fs/xfs/Makefile
+M  fs/xfs/libxfs/xfs_bmap.h
+M  fs/xfs/libxfs/xfs_bmap_btree.c
+M  fs/xfs/libxfs/xfs_bmap_btree.h
+M  fs/xfs/libxfs/xfs_btree.c
+M  fs/xfs/libxfs/xfs_btree.h
