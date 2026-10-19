@@ -443,12 +443,24 @@ jobs:
           in_ours()     { git cat-file -e "$BASE:$1" 2>/dev/null; }
 
           for iter in $(seq 1 ${{ inputs.self_heal_iters }}); do
+            # Quote style in diagnostics is NOT stable across toolchains: the v4.15
+            # logs carried ASCII quotes while the v4.16 log carried the UTF-8
+            # typographic U+2018 / U+2019.  Every rule that parses a *quoted
+            # identifier* out of a diagnostic (rules 2, 2b, 3a, 3b) therefore matched
+            # nothing at all on the v4.16 log -- silently, because a grep that finds
+            # nothing looks exactly like a rule that had nothing to find.  That is why
+            # the self-heal reported 0 candidates on a tree that was plainly broken.
+            # Normalise into log.txt once per round; every rule below uses it.
+            sed -e "s/\xe2\x80\x98/'/g" -e "s/\xe2\x80\x99/'/g" \
+                -e "s/\xe2\x80\x9c/\"/g" -e "s/\xe2\x80\x9d/\"/g" \
+                build_log.txt > log.txt 2>/dev/null || cp build_log.txt log.txt
+
             # Linker failures contain no " error: " at all -- ld says
             # "undefined reference to `sym'".  Counting compiler errors alone made
             # a build with 109 unresolved symbols look "already clean" (observed on
             # the v4.15 step, run 39247895793), so every shape of build failure is
             # counted here.
-            NERR=$(grep -cE ' error: |undefined reference to |multiple definition of |cannot find -l|No rule to make target' build_log.txt)
+            NERR=$(grep -cE ' error: |undefined reference to |multiple definition of |cannot find -l|No rule to make target' log.txt)
             echo ""
             echo "===== self-heal round $iter (build has $NERR error lines) ====="
             if [ "$NERR" -eq 0 ]; then echo "build already clean"; break; fi
@@ -463,7 +475,8 @@ jobs:
             #     That is the culprit definition, and it is what hand analysis of
             #     the NFS/refcount and XFS clusters found (F-024).  If the note
             #     names OUR file the revert is a no-op, so this is safe.
-            grep -E ': note: (.*here|expanded from macro)' build_log.txt \
+            grep -E ': note: ' log.txt \
+              | grep -E 'here|previous (implicit )?declaration|previous definition|defined here|expanded from macro' \
               | sed -E 's#^.*/pox-kernel-begonia/##' \
               | sed -E 's#^([^:]+):[0-9]+(:[0-9]+)?: note: .*#\1#' \
               | sort -u > notefiles.txt
@@ -473,7 +486,7 @@ jobs:
             done < notefiles.txt
 
             # (1) files that themselves failed to compile and were adopted from upstream
-            grep -E ' error: ' build_log.txt \
+            grep -E ' error: ' log.txt \
               | sed -E 's#^.*/pox-kernel-begonia/##' \
               | sed -E 's#^([^:]+):[0-9]+(:[0-9]+)?: error: .*#\1#' \
               | sort -u > errfiles.txt
@@ -486,9 +499,9 @@ jobs:
             #     Restricted to headers and to definition-shaped lines: a bare
             #     `git grep -w <sym>` on a generic word such as "block" or "flags"
             #     matches hundreds of unrelated files and would revert far too much.
-            { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+            { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
+              sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
+              sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
             } | sort -u > syms.txt
             while read -r s; do
               [ -n "$s" ] || continue
@@ -520,7 +533,7 @@ jobs:
             done < syms.txt
 
             # (3a) the file that DEFINES the struct whose member has gone away
-            sed -n "s/.*no member named '[A-Za-z_][A-Za-z0-9_]*' in 'struct \([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt | sort -u > structs.txt
+            sed -n "s/.*no member named '[A-Za-z_][A-Za-z0-9_]*' in 'struct \([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt | sort -u > structs.txt
             while read -r t; do
               [ -n "$t" ] || continue
               for df in $(git grep -l -F "struct $t {" HEAD 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
@@ -560,9 +573,9 @@ jobs:
             #          accessors; fs/xfs/xfs_buf.h, which our tree defines
             #          xfs_buf_set_ref as a static inline in while upstream moved it
             #          into upstream's xfs_buf.c, a file we keep ours).
-            grep -o "undefined reference to \`[A-Za-z_][A-Za-z0-9_]*'" build_log.txt \
+            grep -o "undefined reference to \`[A-Za-z_][A-Za-z0-9_]*'" log.txt \
               | sed -E "s/.*\`([A-Za-z_][A-Za-z0-9_]*)'.*/\1/" | sort -u > linksyms.txt
-            grep -E "^[^ ]+\.o[:(]" build_log.txt \
+            grep -E "^[^ ]+\.o[:(]" log.txt \
               | sed -E 's#^.*/pox-kernel-begonia/##' \
               | sed -E 's#^([^:]+)\.o[:(].*#\1.c#' | sort -u > linkobjs.txt
             while read -r f; do
@@ -593,10 +606,28 @@ jobs:
               done
             done < linksyms.txt
 
+            # (6) scripts/kconfig is a small self-contained HOST program (the .config
+            #     parser) that is rebuilt for every build, and mixing generations inside
+            #     it is fatal: v4.16 kept upstream's lkc.h/lkc_proto.h/util.c/conf.c
+            #     beside our symbol.c/menu.c, so the tree could not even run
+            #     `make defconfig` -- it died in the kconfig host build before compiling
+            #     a single kernel object.  Nothing in the kernel and nothing in any
+            #     driver depends on which generation of these files builds the parser,
+            #     so when the failure is inside scripts/kconfig, hold the WHOLE
+            #     directory at our generation.  (Rules 0 and 3b find the single culprit;
+            #     this closes the rest of the subsystem in the same pass, so the tool is
+            #     never left half-upgraded and never needs a second round.)
+            if grep -q '^scripts/kconfig/' errfiles.txt || grep -q '^scripts/kconfig/' notefiles.txt; then
+              echo "  (6) failure inside scripts/kconfig: holding the host tool at our generation"
+              for df in $(git diff --no-renames --name-only "$V_REF" "$UP" -- scripts/kconfig | sort -u); do
+                if is_upstream "$df" && in_ours "$df"; then echo "    hold $df"; echo "$df" >> cand.txt; fi
+              done
+            fi
+
             # (3b) the other definition of a redefined identifier, and the adopted
             #      header that declares a function with a conflicting signature
-            { sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*conflicting types for '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+            { sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
+              sed -n "s/.*conflicting types for '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
             } | sort -u > idents.txt
             while read -r t; do
               [ -n "$t" ] || continue
@@ -641,6 +672,9 @@ jobs:
         run: |
           set +e
           [ -f build_log.txt ] || exit 0
+          # Same quote normalisation as the self-heal: without it every
+          # quoted-identifier table in this report comes out empty.
+          sed -e "s/\xe2\x80\x98/'/g" -e "s/\xe2\x80\x99/'/g" build_log.txt > log.txt 2>/dev/null || cp build_log.txt log.txt
           UP="$UPSTREAM_SHA"
           # Change sets: who touched what, relative to the merge base.
           git diff --no-renames --name-only "$MERGE_BASE" "origin/${{ inputs.base_branch }}" | sort -u > d_ours.txt
@@ -655,7 +689,7 @@ jobs:
           side_of() { s=$(awk -v f="$1" '$1==f{print $2; exit}' d_map.txt); [ -n "$s" ] && echo "$s" || echo SAME; }
 
           # file<TAB>message for every compiler error
-          grep -E ' error: ' build_log.txt \
+          grep -E ' error: ' log.txt \
             | sed -E 's#^.*/pox-kernel-begonia/##' \
             | sed -E 's#^([^:]+:[0-9]+:[0-9]+): error: #\1\t#' \
             | grep -P '\t' > errs.txt
@@ -691,9 +725,9 @@ jobs:
             echo "### symbols used but not declared -> where upstream v4.15 defines them"
             echo ""
             echo '```'
-            { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
+            { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
+              sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
+              sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" log.txt
             } | sort | uniq -c | sort -rn | head -45 | while read -r cnt sym; do
               defs=""
               for df in $(git grep -l -w "$sym" "$UP" -- 'include' 'block' 'arch/arm64' 'kernel' 2>/dev/null | head -3); do
@@ -706,7 +740,7 @@ jobs:
             echo "### no-member errors -> where upstream v4.15 has that member"
             echo ""
             echo '```'
-            sed -n "s/.*no member named '\([A-Za-z_][A-Za-z0-9_]*\)' in '\(struct [A-Za-z_][A-Za-z0-9_]*\)'.*/\2 :: \1/p" build_log.txt \
+            sed -n "s/.*no member named '\([A-Za-z_][A-Za-z0-9_]*\)' in '\(struct [A-Za-z_][A-Za-z0-9_]*\)'.*/\2 :: \1/p" log.txt \
               | sort | uniq -c | sort -rn | head -30 | while read -r cnt rest; do
                 st="${rest%% :: *}"; mem="${rest#* :: }"; stn="${st##struct }"
                 f=$(git grep -l -w "struct $stn {" "$UP" -- 'include' 2>/dev/null | head -1)
@@ -733,7 +767,7 @@ jobs:
             unmerged.txt
             pick_ours.txt
             pick_theirs.txt
-            build_log.txt
+            log.txt
             fixup.log
             diagnosis.txt
             d_both.txt
@@ -745,3 +779,7 @@ jobs:
       - name: Job summary
         if: always()
         run: cat report.md >> $GITHUB_STEP_SUMMARY
+
+
+
+
