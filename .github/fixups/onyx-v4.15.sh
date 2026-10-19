@@ -118,8 +118,11 @@ start = next((i for i, l in enumerate(lines)
               if l.startswith('typedef') and 'blk_mq_req_flags_t;' in l), None)
 if start is None:
     raise SystemExit('blk_mq_req_flags_t typedef not found in upstream blk_types.h')
-end = next(j for j in range(start, len(lines)) if lines[j].strip() == '};')
-block = '\n'.join(lines[start:end + 1]) + '\n\n'
+# Upstream has it as a lone typedef: take only the typedef statement itself.
+end = start
+while not lines[end].rstrip().endswith(';'):
+    end += 1
+block = '\n'.join(lines[start:end + 1]) + '\n'
 p = 'include/linux/blk_types.h'
 s = open(p).read()
 i = s.rfind('#endif')
