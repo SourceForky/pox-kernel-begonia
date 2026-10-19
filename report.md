@@ -1,61 +1,63 @@
 ### Escalation probe
 
-- base branch : onyx
-- base commit : 05d4e543c302
+- base branch : onyx-v4.15
+- base commit : 3d889e5ebaea
 - base version: 4.14.357
-- upstream    : https://github.com/torvalds/linux @ v4.15
-- target      : onyx-v4.15
+- upstream    : https://github.com/torvalds/linux @ v4.16
+- target      : onyx-v4.16
 - strategy    : default / resolve=both-ours
 
-- upstream sha: `f5b7ec87f701326704545ebfc8fe4a2aa42086aa`
-- merge-base: `bebc6082da0a9f5d47a1ea2edc099bf671058bd4`
-- commits vendor-side (ahead): 44288
-- commits upstream-side (behind): 16223
+- upstream sha: `3fb78e8be9d9428fbc4c016f8b031b01a6fdd63d`
+- align sha (v4.15): `f5b7ec87f701326704545ebfc8fe4a2aa42086aa`
+- commits in this release: 14896
+- merge-base: `d8a5b80568a9cb66810e75b182018e9edb68e8ff`
+- commits vendor-side (ahead): 44293
+- commits upstream-side (behind): 14896
 
 ## Merge result
 
 - merge exit code: 1
-- **conflicted files: 1047**
+- **conflicted files: 1479**
 
 ### merge output (tail)
 ```
-Auto-merging tools/testing/selftests/memfd/memfd_test.c
-Auto-merging tools/testing/selftests/net/rtnetlink.sh
-Auto-merging tools/testing/selftests/powerpc/benchmarks/context_switch.c
-Auto-merging tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
-Auto-merging tools/testing/selftests/rcutorture/bin/configinit.sh
-Auto-merging tools/testing/selftests/rcutorture/bin/kvm.sh
-Auto-merging tools/testing/selftests/vm/.gitignore
-Auto-merging tools/testing/selftests/vm/Makefile
+Auto-merging tools/testing/selftests/vm/compaction_test.c
+Auto-merging tools/testing/selftests/vm/run_vmtests
+CONFLICT (content): Merge conflict in tools/testing/selftests/vm/run_vmtests
 Auto-merging tools/testing/selftests/x86/Makefile
 CONFLICT (content): Merge conflict in tools/testing/selftests/x86/Makefile
-Auto-merging tools/testing/selftests/x86/entry_from_vm86.c
-CONFLICT (content): Merge conflict in tools/testing/selftests/x86/entry_from_vm86.c
+Auto-merging tools/testing/selftests/x86/mpx-mini-test.c
 Auto-merging tools/testing/selftests/x86/protection_keys.c
 CONFLICT (content): Merge conflict in tools/testing/selftests/x86/protection_keys.c
+Auto-merging tools/testing/selftests/x86/ptrace_syscall.c
+Auto-merging tools/testing/selftests/x86/test_vdso.c
+CONFLICT (content): Merge conflict in tools/testing/selftests/x86/test_vdso.c
 Auto-merging tools/testing/selftests/x86/test_vsyscall.c
-CONFLICT (add/add): Merge conflict in tools/testing/selftests/x86/test_vsyscall.c
-Auto-merging tools/usb/usbip/libsrc/vhci_driver.c
-Auto-merging tools/vm/slabinfo-gnuplot.sh
-Auto-merging tools/vm/slabinfo.c
+Auto-merging tools/virtio/linux/kernel.h
+Auto-merging tools/vm/Makefile
+Auto-merging tools/vm/page-types.c
 Auto-merging virt/kvm/arm/arch_timer.c
 CONFLICT (content): Merge conflict in virt/kvm/arm/arch_timer.c
 Auto-merging virt/kvm/arm/arm.c
 CONFLICT (content): Merge conflict in virt/kvm/arm/arm.c
 Auto-merging virt/kvm/arm/hyp/vgic-v2-sr.c
 Auto-merging virt/kvm/arm/hyp/vgic-v3-sr.c
-Auto-merging virt/kvm/arm/mmio.c
 Auto-merging virt/kvm/arm/mmu.c
-Auto-merging virt/kvm/arm/vgic/vgic-init.c
+Auto-merging virt/kvm/arm/psci.c
+CONFLICT (content): Merge conflict in virt/kvm/arm/psci.c
 Auto-merging virt/kvm/arm/vgic/vgic-its.c
-CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic-its.c
-Auto-merging virt/kvm/arm/vgic/vgic-mmio-v2.c
 Auto-merging virt/kvm/arm/vgic/vgic-mmio.c
 CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic-mmio.c
 Auto-merging virt/kvm/arm/vgic/vgic-v2.c
+CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic-v2.c
 Auto-merging virt/kvm/arm/vgic/vgic-v3.c
+CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic-v3.c
 Auto-merging virt/kvm/arm/vgic/vgic.c
+CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic.c
 Auto-merging virt/kvm/arm/vgic/vgic.h
+CONFLICT (content): Merge conflict in virt/kvm/arm/vgic/vgic.h
+Auto-merging virt/kvm/eventfd.c
+CONFLICT (content): Merge conflict in virt/kvm/eventfd.c
 Auto-merging virt/kvm/kvm_main.c
 CONFLICT (content): Merge conflict in virt/kvm/kvm_main.c
 Automatic merge failed; fix conflicts and then commit the result.
@@ -63,214 +65,148 @@ Automatic merge failed; fix conflicts and then commit the result.
 
 ### conflict count by top-level dir
 ```
-     86 arch/x86
-     67 drivers/net
-     64 include/linux
-     42 drivers/gpu
-     40 arch/arm64
-     38 drivers/usb
-     38 arch/powerpc
-     23 net/ipv4
-     23 arch/s390
-     17 kernel/bpf
-     16 tools/testing
-     16 net/sched
+    145 drivers/net
+    116 drivers/gpu
+     68 arch/arm64
+     57 include/linux
+     53 arch/x86
+     43 drivers/infiniband
+     37 drivers/usb
+     36 tools/testing
+     33 drivers/scsi
+     30 arch/powerpc
+     29 drivers/media
+     26 net/sched
+     25 arch/arm
+     22 net/ipv4
+     21 tools/perf
+     21 drivers/staging
+     19 include/net
+     19 fs/btrfs
+     18 net/ipv6
+     17 arch/s390
      16 fs/f2fs
-     16 drivers/scsi
-     16 drivers/media
-     16 drivers/infiniband
-     15 include/net
-     14 net/ipv6
-     12 drivers/mmc
-      9 sound/soc
-      9 net/core
-      9 fs/ext4
-      9 drivers/md
-      9 drivers/iio
-      9 arch/arm
-      8 kernel/trace
-      8 kernel/sched
-      8 drivers/tty
-      7 net/decnet
-      7 fs/crypto
-      7 fs/btrfs
-      6 net/dsa
-      6 include/uapi
-      6 fs/nfs
-      6 drivers/staging
-      6 drivers/pci
-      6 drivers/nvme
-      6 drivers/lightnvm
-      6 drivers/input
-      6 drivers/char
+     15 net/netfilter
+     14 kernel/bpf
+     12 sound/soc
+     12 net/core
+     12 drivers/char
+     11 net/batman-adv
+     11 include/uapi
+     11 fs/xfs
+     11 drivers/pinctrl
+     11 drivers/pci
+     10 virt/kvm
+     10 drivers/tty
+     10 drivers/md
+     10 drivers/hid
+     10 drivers/crypto
+      9 drivers/nvme
+      9 drivers/mmc
+      8 fs/overlayfs
+      8 drivers/platform
 ```
 
 ### first 100 conflicted files
 ```
 .gitignore
-Documentation/ABI/testing/sysfs-devices-system-cpu
+Documentation/ABI/testing/sysfs-ata
 Documentation/ABI/testing/sysfs-fs-f2fs
-Documentation/admin-guide/kernel-parameters.txt
 Documentation/arm64/cpu-feature-registers.txt
-Documentation/cgroup-v2.txt
-Documentation/dev-tools/kcov.rst
+Documentation/core-api/printk-formats.rst
+Documentation/devicetree/bindings/eeprom/eeprom.txt
 Documentation/devicetree/bindings/mmc/mtk-sd.txt
-Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
+Documentation/devicetree/bindings/usb/dwc3.txt
 Documentation/devicetree/bindings/usb/usb-device.txt
-Documentation/filesystems/fscrypt.rst
-Documentation/filesystems/index.rst
-Documentation/printk-formats.txt
-Documentation/x86/x86_64/mm.txt
+Documentation/devicetree/bindings/usb/usb-xhci.txt
+Documentation/filesystems/overlayfs.txt
+Documentation/media/uapi/rc/lirc-dev-intro.rst
+Documentation/media/uapi/rc/lirc-get-rec-mode.rst
+Documentation/networking/segmentation-offloads.txt
+Documentation/networking/xfrm_device.txt
+Documentation/sphinx/kerneldoc.py
+Documentation/sphinx/kfigure.py
+Documentation/sysctl/vm.txt
+Documentation/virtual/kvm/api.txt
+Documentation/virtual/kvm/cpuid.txt
 MAINTAINERS
 Makefile
-arch/arc/include/asm/uaccess.h
+arch/Kconfig
+arch/alpha/kernel/osf_sys.c
 arch/arm/Kconfig
+arch/arm/Kconfig.debug
+arch/arm/Makefile
 arch/arm/boot/dts/Makefile
-arch/arm/boot/dts/imx1.dtsi
+arch/arm/boot/dts/dra7.dtsi
+arch/arm/boot/dts/exynos5422-odroidxu3-audio.dtsi
+arch/arm/boot/dts/imx53.dtsi
+arch/arm/boot/dts/imx6q-bx50v3.dtsi
+arch/arm/boot/dts/imx6qdl.dtsi
+arch/arm/boot/dts/imx6sl.dtsi
+arch/arm/boot/dts/imx6sx.dtsi
+arch/arm/boot/dts/imx6ul.dtsi
 arch/arm/boot/dts/logicpd-som-lv.dtsi
+arch/arm/boot/dts/logicpd-torpedo-som.dtsi
+arch/arm/boot/dts/omap4.dtsi
+arch/arm/boot/dts/spear1340.dtsi
+arch/arm/boot/dts/spear13xx.dtsi
 arch/arm/configs/multi_v7_defconfig
-arch/arm/include/asm/assembler.h
+arch/arm/include/asm/dma-mapping.h
 arch/arm/include/asm/kvm_host.h
+arch/arm/include/asm/kvm_mmu.h
 arch/arm/kernel/head-common.S
-arch/arm/net/bpf_jit_32.c
+arch/arm/mach-davinci/board-omapl138-hawk.c
+arch/arm/mm/Makefile
+arch/arm/mm/proc-v7.S
 arch/arm64/Kconfig
-arch/arm64/Makefile
-arch/arm64/boot/dts/Makefile
-arch/arm64/boot/dts/amlogic/meson-gxl.dtsi
-arch/arm64/boot/dts/marvell/armada-37xx.dtsi
-arch/arm64/boot/dts/mediatek/Makefile
-arch/arm64/boot/dts/mediatek/pca_pps_ta.dtsi
+arch/arm64/Kconfig.platforms
+arch/arm64/boot/dts/altera/socfpga_stratix10.dtsi
+arch/arm64/boot/dts/amlogic/meson-gx.dtsi
+arch/arm64/boot/dts/amlogic/meson-gxbb-nanopi-k2.dts
+arch/arm64/boot/dts/amlogic/meson-gxbb-odroidc2.dts
+arch/arm64/boot/dts/marvell/armada-7040-db.dts
+arch/arm64/boot/dts/marvell/armada-8040-db.dts
+arch/arm64/boot/dts/marvell/armada-8040-mcbin.dts
+arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi
+arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi
+arch/arm64/boot/dts/mediatek/mt8173.dtsi
+arch/arm64/boot/dts/nvidia/tegra186.dtsi
+arch/arm64/boot/dts/qcom/apq8096-db820c.dtsi
+arch/arm64/boot/dts/qcom/msm8996.dtsi
+arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
 arch/arm64/configs/defconfig
+arch/arm64/include/asm/arm_dsu_pmu.h
+arch/arm64/include/asm/asm-uaccess.h
 arch/arm64/include/asm/assembler.h
 arch/arm64/include/asm/barrier.h
 arch/arm64/include/asm/cpucaps.h
-arch/arm64/include/asm/cpufeature.h
 arch/arm64/include/asm/cputype.h
-arch/arm64/include/asm/efi.h
+arch/arm64/include/asm/dma-mapping.h
 arch/arm64/include/asm/fixmap.h
+arch/arm64/include/asm/kvm_arm.h
+arch/arm64/include/asm/kvm_asm.h
 arch/arm64/include/asm/kvm_host.h
+arch/arm64/include/asm/kvm_mmu.h
+arch/arm64/include/asm/memory.h
+arch/arm64/include/asm/mmu.h
 arch/arm64/include/asm/mmu_context.h
+arch/arm64/include/asm/pgtable-hwdef.h
+arch/arm64/include/asm/pgtable-prot.h
 arch/arm64/include/asm/pgtable.h
 arch/arm64/include/asm/processor.h
+arch/arm64/include/asm/sections.h
 arch/arm64/include/asm/sysreg.h
-arch/arm64/include/asm/thread_info.h
-arch/arm64/include/asm/topology.h
-arch/arm64/include/asm/traps.h
+arch/arm64/include/asm/uaccess.h
 arch/arm64/include/uapi/asm/hwcap.h
-arch/arm64/include/uapi/asm/sigcontext.h
 arch/arm64/kernel/Makefile
+arch/arm64/kernel/asm-offsets.c
+arch/arm64/kernel/bpi.S
+arch/arm64/kernel/cpu_errata.c
 arch/arm64/kernel/cpufeature.c
 arch/arm64/kernel/cpuinfo.c
 arch/arm64/kernel/entry.S
-arch/arm64/kernel/ftrace.c
-arch/arm64/kernel/module.lds
-arch/arm64/kernel/process.c
-arch/arm64/kernel/ptrace.c
-arch/arm64/kernel/smp.c
-arch/arm64/kernel/traps.c
-arch/arm64/kvm/handle_exit.c
-arch/arm64/kvm/hyp/switch.c
-arch/arm64/mm/context.c
-arch/arm64/mm/fault.c
-arch/arm64/mm/kasan_init.c
-arch/mips/kernel/ptrace.c
-arch/mips/lib/multi3.c
-arch/parisc/include/asm/ldcw.h
-arch/parisc/kernel/hpmc.S
-arch/parisc/kernel/process.c
-arch/powerpc/Kconfig
-arch/powerpc/include/asm/cputable.h
-arch/powerpc/include/asm/exception-64s.h
-arch/powerpc/include/asm/feature-fixups.h
-arch/powerpc/include/asm/hvcall.h
-arch/powerpc/include/asm/paca.h
-arch/powerpc/include/asm/page_64.h
-arch/powerpc/include/asm/setup.h
-arch/powerpc/include/asm/uaccess.h
-arch/powerpc/kernel/asm-offsets.c
-arch/powerpc/kernel/cpu_setup_power.S
-arch/powerpc/kernel/dt_cpu_ftrs.c
-arch/powerpc/kernel/exceptions-64s.S
-arch/powerpc/kernel/idle_book3s.S
-arch/powerpc/kernel/kprobes-ftrace.c
-arch/powerpc/kernel/optprobes.c
-arch/powerpc/kernel/prom.c
-arch/powerpc/kernel/setup-common.c
-arch/powerpc/kernel/setup_64.c
-arch/powerpc/kernel/vmlinux.lds.S
-arch/powerpc/kernel/watchdog.c
-arch/powerpc/lib/code-patching.c
-arch/powerpc/lib/feature-fixups.c
-arch/powerpc/mm/hash_native_64.c
-arch/powerpc/mm/hugetlbpage-radix.c
-arch/powerpc/mm/mmap.c
-arch/powerpc/mm/mmu_context_book3s64.c
-arch/powerpc/mm/slice.c
-arch/powerpc/mm/tlb-radix.c
-```
-resolved with: both-ours (kept=5966 dropped=56 restored_deleted=290)
-
-## Fixups (.github/fixups/onyx-v4.15.sh)
-
-```
-  [+] reverted to ours: fs/xfs/xfs_itable.c
-  [+] reverted to ours: fs/xfs/xfs_itable.h
-  [+] reverted to ours: fs/xfs/xfs_linux.h
-  [+] reverted to ours: fs/xfs/xfs_symlink.c
-  [+] reverted to ours: include/linux/ioport.h
-  [+] reverted to ours: include/linux/pinctrl/consumer.h
-  [+] reverted to ours: include/linux/sched/cputime.h
-  [+] reverted to ours: include/net/netfilter/ipv4/nf_conntrack_ipv4.h
-  [+] reverted to ours: include/net/netfilter/ipv6/nf_conntrack_ipv6.h
-  [+] reverted to ours: include/trace/events/dma_fence.h
-  [+] reverted to ours: kernel/audit_tree.c
-  [+] reverted to ours: kernel/irq/autoprobe.c
-  [+] reverted to ours: kernel/irq/spurious.c
-  [+] reverted to ours: kernel/sched/wait_bit.c
-  [+] reverted to ours: mm/page_isolation.c
-  [+] reverted to ours: net/bridge/br_ioctl.c
-  [+] reverted to ours: net/bridge/br_netlink_tunnel.c
-  [+] reverted to ours: net/bridge/br_stp.c
-  [+] reverted to ours: net/bridge/br_stp_if.c
-  [+] reverted to ours: net/bridge/br_stp_timer.c
-  [+] reverted to ours: net/ipv4/netfilter/nf_conntrack_proto_icmp.c
-  [+] reverted to ours: net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
-  [+] reverted to ours: net/netfilter/nf_conntrack_proto_generic.c
-  [+] reverted to ours: net/netfilter/nf_conntrack_proto_gre.c
-  [+] reverted to ours: net/netfilter/nf_conntrack_proto_udp.c
-  [+] reverted to ours: net/sched/sch_htb.c
-  [+] reverted to ours: fs/xfs/libxfs/xfs_dir2.h
-  [+] br_private.h: adding neigh_suppress_enabled to struct net_bridge
-    inserted 33 bytes at the end of struct net_bridge
-===== fixups done =====
-M  arch/arm64/include/asm/irqflags.h
-M  arch/arm64/include/asm/spinlock_types.h
-M  arch/arm64/lib/delay.c
-M  block/bfq-iosched.h
-M  drivers/base/property.c
-M  drivers/clk/clk-gpio.c
-M  drivers/hwtracing/stm/policy.c
-M  drivers/mmc/core/host.h
-M  drivers/of/of_private.h
-M  drivers/pinctrl/core.h
-M  drivers/rtc/class.c
-M  drivers/scsi/scsi_priv.h
-M  drivers/target/target_core_configfs.c
-M  fs/btrfs/backref.h
-M  fs/btrfs/delayed-ref.h
-M  fs/btrfs/lzo.c
-M  fs/btrfs/send.h
-M  fs/btrfs/sysfs.h
-M  fs/btrfs/zlib.c
-M  fs/btrfs/zstd.c
-M  fs/configfs/item.c
-M  fs/ecryptfs/ecryptfs_kernel.h
-M  fs/notify/group.c
-M  fs/udf/dir.c
-M  fs/xfs/Makefile
-M  fs/xfs/libxfs/xfs_bmap.h
-M  fs/xfs/libxfs/xfs_bmap_btree.c
-M  fs/xfs/libxfs/xfs_bmap_btree.h
-M  fs/xfs/libxfs/xfs_btree.c
-M  fs/xfs/libxfs/xfs_btree.h
+arch/arm64/kernel/fpsimd.c
+arch/arm64/kernel/hibernate.c
+arch/arm64/kernel/irq.c
 ```
