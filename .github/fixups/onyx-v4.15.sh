@@ -198,6 +198,11 @@ fs/xfs/xfs_bmap_util.h
 drivers/mmc/core/host.h
 drivers/of/of_private.h
 net/bridge/br_private_tunnel.h
+block/bfq-iosched.h
+include/linux/configfs.h
+include/net/netfilter/nf_conntrack_l4proto.h
+arch/arm64/include/asm/irqflags.h
+arch/arm64/include/asm/daifflags.h
 "
 for f in $REVERT_TO_OURS; do
   if ! git cat-file -e "origin/onyx:$f" 2>/dev/null; then
@@ -208,6 +213,35 @@ for f in $REVERT_TO_OURS; do
     echo "  [!] could not revert $f"
   fi
 done
+
+# ---------------------------------------------------------------------------
+# Fix 6: additive port, for a place where the adopted upstream file is a NEW
+#        feature rather than a conflicting rewrite.
+#        Upstream v4.15 added the bridge ARP/ND proxy (net/bridge/br_arp_nd_proxy.c)
+#        and the adopted net/bridge/Makefile builds it.  That file needs exactly one
+#        thing our vendor tree lacks: the field it stores its sysfs setting in.
+#            upstream net/bridge/br_private.h:407  ->  bool neigh_suppress_enabled;
+#        We add just that field to our struct net_bridge instead of disabling the
+#        feature.  It is appended at the END of the struct, so the offset of every
+#        existing member is unchanged -- which is what makes this safe.
+# ---------------------------------------------------------------------------
+if [ -f net/bridge/br_private.h ]; then
+  if grep -q 'neigh_suppress_enabled' net/bridge/br_private.h; then
+    echo "  [=] br_private.h already has neigh_suppress_enabled"
+  else
+    echo "  [+] br_private.h: adding neigh_suppress_enabled to struct net_bridge"
+    python3 - <<'PY'
+p = 'net/bridge/br_private.h'
+s = open(p).read()
+start = s.index('struct net_bridge {')
+end = s.index('\n};', start)
+field = '\n\tbool\t\t\t\tneigh_suppress_enabled;'
+s = s[:end] + field + s[end:]
+open(p, 'w').write(s)
+print('    inserted %d bytes at the end of struct net_bridge' % len(field))
+PY
+  fi
+fi
 
 echo "===== fixups done ====="
 git status --short | head -30
