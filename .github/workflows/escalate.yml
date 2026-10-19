@@ -208,7 +208,17 @@ jobs:
             echo "kept-ours=$(grep -c . keep_ours.txt) dropped=$(grep -c . drop_ours.txt)"
             xargs -a keep_ours.txt -d '\n' -r git checkout HEAD --
             xargs -a drop_ours.txt -d '\n' -r git rm -q -f -- 2>/dev/null || true
-            SIDE="both-ours (kept=$(grep -c . keep_ours.txt) dropped=$(grep -c . drop_ours.txt))"
+            # Never let upstream DELETE a file we still ship.  v4.15 moved
+            # drivers/base/power/opp/ -> drivers/opp/, so the merge removed the
+            # old directory, but our drivers/base/power/Makefile still says
+            # "obj-$(CONFIG_PM_OPP) += opp/" and the directory is still needed.
+            # The old tree is not built twice, because our drivers/Makefile has
+            # no "opp/" entry, so only drivers/base/power/opp/ is compiled.
+            git diff --name-only -z --diff-filter=D "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_deleted.txt
+            comm -12 u_deleted.txt head_files.txt > keep_deleted.txt
+            xargs -a keep_deleted.txt -d '\n' -r git checkout HEAD --
+            echo "upstream-deleted=$(grep -c . u_deleted.txt) restored=$(grep -c . keep_deleted.txt)"
+            SIDE="both-ours (kept=$(grep -c . keep_ours.txt) dropped=$(grep -c . drop_ours.txt) restored_deleted=$(grep -c . keep_deleted.txt))"
           elif [[ "$SIDE" == "upstream-core" ]]; then
             # Adopt upstream VERBATIM for every path upstream changed since the
             # merge base; keep our own version of everything upstream never
