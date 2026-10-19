@@ -57,18 +57,25 @@ PY
 fi
 
 # ---------------------------------------------------------------------------
-# Fix 2: qrwlock cluster.
-#        arch/arm64/include/asm/spinlock.h is OURS (vendor touched it) and
-#        refers to qrwlock's member "->lock".  Upstream v4.15 renamed that
-#        member to "wait_lock" in asm-generic/qrwlock_types.h, and that file
-#        (plus qrwlock.h and qrwlock.c) were adopted from upstream because the
-#        vendor had not touched THEM.  Result: "no member named 'lock'".
+# Fix 2: the arm64 rwlock cluster.
+#        Our (vendor) arm64 tree does NOT use the generic qrwlock at all: our
+#        arch/arm64/include/asm/spinlock_types.h defines
+#              typedef struct { volatile unsigned int lock; } arch_rwlock_t;
+#        and our arch/arm64/include/asm/spinlock.h implements rwlocks natively
+#        on top of "->lock".
+#        Upstream v4.15 replaced that spinlock_types.h with one that pulls in
+#        <asm-generic/qrwlock_types.h> (arch_rwlock_t = struct qrwlock with
+#        cnts/wait_lock), and because only upstream had touched that file it got
+#        adopted -> "no member named 'lock' in 'struct qrwlock'".
 #        Keep the whole cluster on our side so the pair agrees again.
 # ---------------------------------------------------------------------------
-for f in include/asm-generic/qrwlock.h \
+for f in arch/arm64/include/asm/spinlock_types.h \
+         include/asm-generic/qrwlock.h \
          include/asm-generic/qrwlock_types.h \
          kernel/locking/qrwlock.c ; do
-  if git checkout origin/onyx -- "$f" 2>/dev/null; then
+  if ! git cat-file -e "origin/onyx:$f" 2>/dev/null; then
+    echo "  [-] not in ours, skipped: $f"
+  elif git checkout origin/onyx -- "$f" 2>/dev/null; then
     echo "  [+] reverted to ours: $f"
   else
     echo "  [!] could not revert $f"
