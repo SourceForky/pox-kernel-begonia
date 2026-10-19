@@ -487,6 +487,22 @@ jobs:
               done
             done < structs.txt
 
+            # (4) errors in a file that does not exist in our tree at all, i.e. one
+            #     upstream ADDED (xfs_iext_tree.c in v4.15).  There is nothing to
+            #     revert it TO, so stop building it: revert the adopted Makefile that
+            #     references its object.  Only ever triggered for a file we do not
+            #     have, so no file of ours can be dropped from the build by this.
+            while read -r f; do
+              [ -n "$f" ] || continue
+              if is_upstream "$f" && ! in_ours "$f"; then
+                o="$(basename "$f")"
+                o="${o%.c}.o"
+                for mk in $(git grep -l -F "$o" HEAD -- 'Makefile' 'Kbuild' '*/Makefile' '*/Kbuild' 2>/dev/null | sed -E 's#^[^:]+:##' | head -6); do
+                  if is_upstream "$mk" && in_ours "$mk"; then echo "$mk" >> cand.txt; fi
+                done
+              fi
+            done < errfiles.txt
+
             # (3b) the other definition of a redefined identifier, and the adopted
             #      header that declares a function with a conflicting signature
             { sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
