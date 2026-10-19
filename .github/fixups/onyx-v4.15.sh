@@ -131,5 +131,55 @@ print('    ported %d bytes' % len(block))
 PY
 fi
 
+# ---------------------------------------------------------------------------
+# Fix 5: adopted upstream files that our (vendor) code provably cannot build
+#        against.  Each of these was established by blob hash + reading the
+#        failing source line, NOT guessed:
+#
+#  include/linux/nfs_fs_sb.h    upstream v4.15 changed struct nfs_client's
+#                               cl_count from atomic_t to refcount_t, while our
+#                               fs/nfs/client.c still calls atomic_set() on it;
+#                               atomic_set() expands to (v)->counter, and
+#                               refcount_t has no 'counter' -> 23 errors.
+#  include/linux/blk-mq.h       upstream changed blk_mq_run_hw_queue()'s
+#                               signature; our block/blk-mq.{c,h} still use the
+#                               old one -> "conflicting types".
+#  include/linux/iomap.h        upstream v4.15 dropped struct iomap::blkno and
+#                               IOMAP_NULL_BLOCK; our fs/iomap.c and fs/buffer.c
+#                               still use them.
+#  fs/btrfs/delayed-ref.h       upstream renamed BTRFS_DELAYED_REF members used
+#                               by our fs/btrfs/{delayed-ref,extent-tree,backref,
+#                               disk-io}.c.
+#  include/scsi/scsi_devinfo.h  upstream turned BLIST_* enum constants into
+#                               macros cast to blist_flags_t, which does not
+#                               exist in our include/scsi/scsi_device.h
+#                               (unsigned int sdev_bflags).
+#  drivers/scsi/scsi_priv.h     upstream-only file; its structs use blist_flags_t.
+#  include/linux/blk-cgroup.h   upstream-only; bio_blkcg() calls kthread_blkcg()
+#                               which our include/linux/cgroup.h never declared.
+#  include/net/pkt_cls.h        upstream-only; needs tc_setup_cb_t,
+#                               tcf_chain_head_change_t and struct tcf_block::q
+#                               which our net/sched core does not have.
+# ---------------------------------------------------------------------------
+REVERT_TO_OURS="
+include/linux/nfs_fs_sb.h
+include/linux/blk-mq.h
+include/linux/iomap.h
+fs/btrfs/delayed-ref.h
+include/scsi/scsi_devinfo.h
+drivers/scsi/scsi_priv.h
+include/linux/blk-cgroup.h
+include/net/pkt_cls.h
+"
+for f in $REVERT_TO_OURS; do
+  if ! git cat-file -e "origin/onyx:$f" 2>/dev/null; then
+    echo "  [-] not in ours, skipped: $f"
+  elif git checkout origin/onyx -- "$f" 2>/dev/null; then
+    echo "  [+] reverted to ours: $f"
+  else
+    echo "  [!] could not revert $f"
+  fi
+done
+
 echo "===== fixups done ====="
 git status --short | head -30
