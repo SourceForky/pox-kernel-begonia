@@ -260,8 +260,13 @@ static inline unsigned int optimal_redzone(unsigned int object_size)
 		object_size <= (1 << 16) - 1024 ? 1024 : 2048;
 }
 
+<<<<<<< HEAD:mm/kasan/common.c
 void kasan_cache_create(struct kmem_cache *cache, unsigned int *size,
 			unsigned long *flags)
+=======
+void kasan_cache_create(struct kmem_cache *cache, size_t *size,
+			slab_flags_t *flags)
+>>>>>>> f5b7ec87f701326704545ebfc8fe4a2aa42086aa:mm/kasan/kasan.c
 {
 	unsigned int orig_size = *size;
 	unsigned int redzone_size;
