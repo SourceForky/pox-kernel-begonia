@@ -160,16 +160,44 @@ fi
 #  include/net/pkt_cls.h        upstream-only; needs tc_setup_cb_t,
 #                               tcf_chain_head_change_t and struct tcf_block::q
 #                               which our net/sched core does not have.
+#
+#  The remaining entries were not guessed either: they are exactly the files
+#  clang itself names in a "note: previous definition is here" / "note: 'x'
+#  declared here" / "note: expanded from macro" line that explains one of the
+#  build errors (F-024).  Reverting them restores our (older) declaration so it
+#  matches the vendor .c files underneath.  No driver, config option or source
+#  file is removed by any of this -- only the generation of these declarations
+#  is held back.
 # ---------------------------------------------------------------------------
 REVERT_TO_OURS="
 include/linux/nfs_fs_sb.h
 include/linux/blk-mq.h
 include/linux/iomap.h
 fs/btrfs/delayed-ref.h
+fs/btrfs/backref.h
+fs/btrfs/sysfs.h
 include/scsi/scsi_devinfo.h
 drivers/scsi/scsi_priv.h
 include/linux/blk-cgroup.h
 include/net/pkt_cls.h
+include/linux/gpio/driver.h
+include/linux/gpio/machine.h
+include/linux/of_gpio.h
+include/linux/irqdomain.h
+include/linux/page-isolation.h
+include/linux/rtnetlink.h
+include/linux/iio/iio.h
+fs/ecryptfs/ecryptfs_kernel.h
+fs/xfs/libxfs/xfs_types.h
+fs/xfs/libxfs/xfs_bmap.h
+fs/xfs/libxfs/xfs_bmap_btree.h
+fs/xfs/libxfs/xfs_ialloc.h
+fs/xfs/libxfs/xfs_inode_fork.h
+fs/xfs/xfs_inode.h
+fs/xfs/xfs_bmap_util.h
+drivers/mmc/core/host.h
+drivers/of/of_private.h
+net/bridge/br_private_tunnel.h
 "
 for f in $REVERT_TO_OURS; do
   if ! git cat-file -e "origin/onyx:$f" 2>/dev/null; then
