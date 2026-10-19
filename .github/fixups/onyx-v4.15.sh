@@ -95,5 +95,38 @@ else
   echo "  [!] could not revert include/linux/jump_label_ratelimit.h"
 fi
 
+# ---------------------------------------------------------------------------
+# Fix 4: include/linux/blk-mq.h is UPSTREAM (v4.15) and uses the type
+#        blk_mq_req_flags_t six times; upstream defines it in
+#        include/linux/blk_types.h, which in our tree is OURS (the vendor had
+#        touched that header), so the type is absent -> 1104 errors. Port the
+#        definition across verbatim from upstream.
+# ---------------------------------------------------------------------------
+if grep -q 'blk_mq_req_flags_t' include/linux/blk_types.h; then
+  echo "  [=] blk_types.h already has blk_mq_req_flags_t"
+else
+  echo "  [+] blk_types.h: porting blk_mq_req_flags_t from upstream"
+  python3 - <<'PY'
+import subprocess, os
+up = os.environ.get('UPSTREAM_SHA')
+if not up:
+    up = subprocess.run(['git', 'rev-parse', 'FETCH_HEAD'],
+                        capture_output=True, text=True).stdout.strip()
+src = subprocess.check_output(['git', 'show', up + ':include/linux/blk_types.h']).decode()
+lines = src.split('\n')
+start = next((i for i, l in enumerate(lines)
+              if l.startswith('typedef') and 'blk_mq_req_flags_t;' in l), None)
+if start is None:
+    raise SystemExit('blk_mq_req_flags_t typedef not found in upstream blk_types.h')
+end = next(j for j in range(start, len(lines)) if lines[j].strip() == '};')
+block = '\n'.join(lines[start:end + 1]) + '\n\n'
+p = 'include/linux/blk_types.h'
+s = open(p).read()
+i = s.rfind('#endif')
+open(p, 'w').write(s[:i] + block + s[i:])
+print('    ported %d bytes' % len(block))
+PY
+fi
+
 echo "===== fixups done ====="
 git status --short | head -30
