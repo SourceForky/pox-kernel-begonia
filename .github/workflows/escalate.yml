@@ -320,6 +320,11 @@ jobs:
             echo "no fixup script found (looked for .github/fixups/${{ inputs.target_branch }}.sh and .github/fixups/fix.sh)"
           fi
 
+      - name: Publish branch early (so it is visible during the build)
+        if: inputs.push_result
+        run: |
+          git push --force origin "HEAD:refs/heads/${{ inputs.target_branch }}" || echo "early publish failed (harmless)"
+
       - name: Install host build dependencies
         if: inputs.attempt_build
         run: |
@@ -418,28 +423,45 @@ jobs:
               if is_upstream "$f" && in_ours "$f"; then echo "$f" >> cand.txt; fi
             done < errfiles.txt
 
-            # (2) upstream files that DEFINE a symbol some file could not find
+            # (2) upstream HEADERS that DEFINE a symbol some file could not find.
+            #     Restricted to headers and to definition-shaped lines: a bare
+            #     `git grep -w <sym>` on a generic word such as "block" or "flags"
+            #     matches hundreds of unrelated files and would revert far too much.
             { sed -n "s/.*use of undeclared identifier '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
               sed -n "s/.*implicit declaration of function '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
               sed -n "s/.*unknown type name '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
             } | sort -u > syms.txt
             while read -r s; do
               [ -n "$s" ] || continue
-              for df in $(git grep -l -w "$s" "$UP" 2>/dev/null); do
+              case "$s" in
+                block|flags|dev|info|data|name|list|node|type|size|count|index|value|mode|addr|len|ops|queue|req|bio|inode|file|page|task|work|event|state|config|owner|private|key|id) continue ;;
+              esac
+              for df in $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | head -8) \
+                        $(git grep -l -E "^#define[[:space:]]+$s([^A-Za-z0-9_]|$)" "$UP" -- '*.h' 2>/dev/null | head -8) \
+                        $(git grep -l -E "typedef[^;]*[^A-Za-z0-9_]$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | head -8) \
+                        $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*\(" "$UP" -- '*.h' 2>/dev/null | head -8); do
                 if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
               done
             done < syms.txt
 
-            # (3) upstream files (re)defining a struct/type that no longer matches its users
-            { sed -n "s/.*no member named '[A-Za-z_][A-Za-z0-9_]*' in 'struct \([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-              sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
-            } | sort -u > types.txt
+            # (3a) the file that DEFINES the struct whose member has gone away
+            sed -n "s/.*no member named '[A-Za-z_][A-Za-z0-9_]*' in 'struct \([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt | sort -u > structs.txt
             while read -r t; do
               [ -n "$t" ] || continue
-              for df in $(git grep -l -w "$t" HEAD 2>/dev/null | head -60); do
+              for df in $(git grep -l -F "struct $t {" HEAD 2>/dev/null | head -8) \
+                        $(git grep -l -F "} $t;" HEAD 2>/dev/null | head -8); do
                 if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
               done
-            done < types.txt
+            done < structs.txt
+
+            # (3b) the other definition of a redefined identifier
+            sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt | sort -u > idents.txt
+            while read -r t; do
+              [ -n "$t" ] || continue
+              for df in $(git grep -l -w "$t" HEAD 2>/dev/null | head -8); do
+                if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
+              done
+            done < idents.txt
 
             sort -u cand.txt > cand2.txt
             N=$(grep -c . cand2.txt)
@@ -550,7 +572,7 @@ jobs:
       - name: Push resulting branch
         if: inputs.push_result
         run: |
-          git push --force-with-lease origin "${{ inputs.target_branch }}"
+          git push --force origin "${{ inputs.target_branch }}"
 
       - name: Upload reports
         if: always()
