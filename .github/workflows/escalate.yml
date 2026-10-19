@@ -40,6 +40,7 @@ on:
           - theirs
           - ours
           - auto-vendor
+          - upstream-core
       attempt_build:
         description: 'Attempt kernel build after the merge'
         required: true
@@ -179,31 +180,52 @@ jobs:
           git diff --name-only --diff-filter=U > unmerged.txt
           echo "unmerged paths: $(grep -c . unmerged.txt)"
 
-          VENDOR_RE='mediatek|/mtk|mtk_|/mt6[0-9]|mt67|mt68|mtk-|dts/mediatek'
-          : > pick_ours.txt ; : > pick_theirs.txt
+          if [[ "$SIDE" == "upstream-core" ]]; then
+            # Adopt upstream VERBATIM for every path upstream changed since the
+            # merge base; keep our own version of everything upstream never
+            # touched (the MediaTek/POX-only files). This is the only policy that
+            # yields a self-consistent core: no file is left as a 4.14/4.19/5.x
+            # hybrid, which is what makes sched.h<->pid.h style breakage impossible.
+            git diff --name-only "$MERGE_BASE" "$UP" > up_changed.txt
+            echo "paths upstream changed base..target: $(grep -c . up_changed.txt)"
+            adopted=0; removed=0
+            while IFS= read -r f; do
+              [[ -n "$f" ]] || continue
+              if git cat-file -e "$UP:$f" 2>/dev/null; then
+                git checkout "$UP" -- "$f" 2>/dev/null && adopted=$((adopted+1))
+              else
+                git rm -q -f -- "$f" 2>/dev/null && removed=$((removed+1))
+              fi
+            done < up_changed.txt
+            echo "adopted from upstream: $adopted   removed: $removed"
+            SIDE="upstream-core (adopted=$adopted removed=$removed)"
+          else
+            VENDOR_RE='mediatek|/mtk|mtk_|/mt6[0-9]|mt67|mt68|mtk-|dts/mediatek'
+            : > pick_ours.txt ; : > pick_theirs.txt
 
-          while IFS= read -r f; do
-            [[ -n "$f" ]] || continue
-            case "$SIDE" in
-              ours)   first=--ours   ;;
-              theirs) first=--theirs ;;
-              auto-vendor)
-                if echo "$f" | grep -Eq "$VENDOR_RE"; then first=--ours; else first=--theirs; fi
-                ;;
-              *)      first=--theirs ;;
-            esac
-            other=$([[ "$first" == "--ours" ]] && echo --theirs || echo --ours)
+            while IFS= read -r f; do
+              [[ -n "$f" ]] || continue
+              case "$SIDE" in
+                ours)   first=--ours   ;;
+                theirs) first=--theirs ;;
+                auto-vendor)
+                  if echo "$f" | grep -Eq "$VENDOR_RE"; then first=--ours; else first=--theirs; fi
+                  ;;
+                *)      first=--theirs ;;
+              esac
+              other=$([[ "$first" == "--ours" ]] && echo --theirs || echo --ours)
 
-            if git checkout "$first" -- "$f" 2>/dev/null; then
-              [[ "$first" == "--ours" ]] && echo "$f" >> pick_ours.txt || echo "$f" >> pick_theirs.txt
-            elif git checkout "$other" -- "$f" 2>/dev/null; then
-              [[ "$other" == "--ours" ]] && echo "$f" >> pick_ours.txt || echo "$f" >> pick_theirs.txt
-            else
-              git rm -f -- "$f" 2>/dev/null || true
-            fi
-          done < unmerged.txt
+              if git checkout "$first" -- "$f" 2>/dev/null; then
+                [[ "$first" == "--ours" ]] && echo "$f" >> pick_ours.txt || echo "$f" >> pick_theirs.txt
+              elif git checkout "$other" -- "$f" 2>/dev/null; then
+                [[ "$other" == "--ours" ]] && echo "$f" >> pick_ours.txt || echo "$f" >> pick_theirs.txt
+              else
+                git rm -f -- "$f" 2>/dev/null || true
+              fi
+            done < unmerged.txt
 
-          SIDE="$SIDE (wholesale: ours=$(grep -c . pick_ours.txt), theirs=$(grep -c . pick_theirs.txt))"
+            SIDE="$SIDE (wholesale: ours=$(grep -c . pick_ours.txt), theirs=$(grep -c . pick_theirs.txt))"
+          fi
           git add -A
           git -c user.name="Pox Escalation Bot" -c user.email="escalation@pox.local" \
               commit -m "merge(${{ inputs.upstream_ref }}): merge upstream into ${{ inputs.base_branch }} (resolved: $SIDE)" || true
