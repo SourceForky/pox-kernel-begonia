@@ -413,6 +413,23 @@ jobs:
 
             : > cand.txt
 
+            # (0) The most reliable signal of all: the file clang itself names in
+            #     a `note:` that explains an error --
+            #       "note: previous definition is here"   (redefinition)
+            #       "note: 'x' declared here" / "defined here" (signature clash)
+            #       "note: expanded from macro 'x'"  (macro from a changed header)
+            #     That is the culprit definition, and it is what hand analysis of
+            #     the NFS/refcount and XFS clusters found (F-024).  If the note
+            #     names OUR file the revert is a no-op, so this is safe.
+            grep -E ': note: (previous definition is here|.* declared here|.* defined here|expanded from macro)' build_log.txt \
+              | sed -E 's#^.*/pox-kernel-begonia/##' \
+              | sed -E 's#^([^:]+):[0-9]+(:[0-9]+)?: note: .*#\1#' \
+              | sort -u > notefiles.txt
+            while read -r f; do
+              [ -n "$f" ] || continue
+              if is_upstream "$f" && in_ours "$f"; then echo "$f" >> cand.txt; fi
+            done < notefiles.txt
+
             # (1) files that themselves failed to compile and were adopted from upstream
             grep -E ' error: ' build_log.txt \
               | sed -E 's#^.*/pox-kernel-begonia/##' \
