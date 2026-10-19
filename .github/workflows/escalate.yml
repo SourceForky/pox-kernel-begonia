@@ -13,6 +13,10 @@ on:
       upstream_ref:
         description: 'Upstream tag/ref to merge (e.g. v4.15)'
         required: true
+      align_ref:
+        description: 'Previous release tag to align against (e.g. v4.15 when merging v4.16). Empty = use the git merge base.'
+        required: false
+        default: ''
       base_branch:
         description: 'Branch to start from'
         required: true
@@ -109,6 +113,21 @@ jobs:
           echo "UPSTREAM_SHA=$UP_SHA" >> $GITHUB_ENV
           echo "upstream sha: $UP_SHA"
           echo "- upstream sha: \`$UP_SHA\`" >> report.md
+          # Optional: the PREVIOUS release we are stepping from.  Git's merge base is
+          # the point where our vendor fork left mainline (v4.14 for every step), so
+          # a file we adopted from v4.15 looks like "we changed it" for the v4.16
+          # step and the both-ours policy would freeze it forever.  Aligning against
+          # the previous release instead makes each step a true one-release delta.
+          if [[ -n "${{ inputs.align_ref }}" ]]; then
+            git fetch --no-tags upstream "${{ inputs.align_ref }}"
+            ALIGN_SHA=$(git rev-parse FETCH_HEAD)
+            echo "ALIGN_SHA=$ALIGN_SHA" >> $GITHUB_ENV
+            echo "align sha (${{ inputs.align_ref }}): $ALIGN_SHA"
+            echo "- align sha (${{ inputs.align_ref }}): \`$ALIGN_SHA\`" >> report.md
+            echo "- commits in this release: $(git rev-list --count "$ALIGN_SHA..$UP_SHA")" >> report.md
+          else
+            echo "no align_ref given: using the git merge base as the alignment point"
+          fi
 
       - name: Compute merge base and delta size
         run: |
@@ -213,8 +232,10 @@ jobs:
             # progress).  Files only we touched keep ours.  Files both touched
             # keep OURS -- these are the coupled pairs, so no half-pair can form
             # and no MediaTek hook is dropped.
-            git diff --no-renames --name-only -z "$MERGE_BASE" HEAD  | tr '\0' '\n' | sort -u > v_changed.txt
-            git diff --no-renames --name-only -z "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_changed.txt
+            V_REF="${ALIGN_SHA:-$MERGE_BASE}"
+            echo "align point: $V_REF (merge base: $MERGE_BASE)"
+            git diff --no-renames --name-only -z "$V_REF" HEAD  | tr '\0' '\n' | sort -u > v_changed.txt
+            git diff --no-renames --name-only -z "$V_REF" "$UP" | tr '\0' '\n' | sort -u > u_changed.txt
             comm -12 v_changed.txt u_changed.txt > both.txt
             git ls-tree -r -z --name-only HEAD | tr '\0' '\n' | sort -u > head_files.txt
             comm -12 both.txt head_files.txt > keep_ours.txt
@@ -229,7 +250,7 @@ jobs:
             # "obj-$(CONFIG_PM_OPP) += opp/" and the directory is still needed.
             # The old tree is not built twice, because our drivers/Makefile has
             # no "opp/" entry, so only drivers/base/power/opp/ is compiled.
-            git diff --no-renames --name-only -z --diff-filter=D "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_deleted.txt
+            git diff --no-renames --name-only -z --diff-filter=D "$V_REF" "$UP" | tr '\0' '\n' | sort -u > u_deleted.txt
             comm -12 u_deleted.txt head_files.txt > keep_deleted.txt
             xargs -a keep_deleted.txt -d '\n' -r git checkout HEAD --
             echo "upstream-deleted=$(grep -c . u_deleted.txt) restored=$(grep -c . keep_deleted.txt)"
@@ -394,8 +415,10 @@ jobs:
           set +e
           UP="$UPSTREAM_SHA"
           BASE="origin/${{ inputs.base_branch }}"
-          git diff --no-renames --name-only "$MERGE_BASE" "$BASE" | sort -u > d_ours.txt
-          git diff --no-renames --name-only "$MERGE_BASE" "$UP"   | sort -u > d_up.txt
+          V_REF="${ALIGN_SHA:-$MERGE_BASE}"
+          echo "self-heal alignment point: $V_REF"
+          git diff --no-renames --name-only "$V_REF" "$BASE" | sort -u > d_ours.txt
+          git diff --no-renames --name-only "$V_REF" "$UP"   | sort -u > d_up.txt
           comm -12 d_ours.txt d_up.txt   > d_both.txt
           comm -23 d_ours.txt d_up.txt   > d_oursonly.txt
           comm -23 d_up.txt   d_ours.txt > d_uponly.txt
