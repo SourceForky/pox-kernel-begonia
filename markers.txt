@@ -1,4 +1,11 @@
+Documentation/core-api/printk-formats.rst
 drivers/gpu/drm/i915/intel_guc_fw.c
+drivers/misc/cardreader/rtsx_pcr.c
+drivers/net/ethernet/hisilicon/hns3/hns3_enet.c
+drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c
+drivers/staging/ccree/cc_buffer_mgr.c
+drivers/staging/ccree/cc_cipher.c
+drivers/staging/ccree/cc_driver.c
 include/linux/usb/tcpm.h
 mm/kasan/common.c
 sound/soc/soc-acpi.c

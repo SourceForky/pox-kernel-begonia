@@ -210,3 +210,38 @@ arch/arm64/kernel/fpsimd.c
 arch/arm64/kernel/hibernate.c
 arch/arm64/kernel/irq.c
 ```
+resolved with: both-ours (kept=5466 dropped=22 restored_deleted=350)
+
+## Fixups (.github/fixups/onyx-v4.16.sh)
+
+```
+===== v4.16 fixups =====
+  [+] reverted to ours: scripts/kconfig/.gitignore
+  [+] reverted to ours: scripts/kconfig/Makefile
+  [+] reverted to ours: scripts/kconfig/conf.c
+  [+] reverted to ours: scripts/kconfig/kconf_id.c
+  [+] reverted to ours: scripts/kconfig/kxgettext.c
+  [+] reverted to ours: scripts/kconfig/lkc.h
+  [+] reverted to ours: scripts/kconfig/lkc_proto.h
+  [+] reverted to ours: scripts/kconfig/lxdialog/check-lxdialog.sh
+  [+] reverted to ours: scripts/kconfig/mconf.c
+  [+] reverted to ours: scripts/kconfig/util.c
+  [+] reverted to ours: scripts/kconfig/zconf.lex.c_shipped
+  [+] reverted to ours: scripts/kconfig/zconf.tab.c_shipped
+  [=] lkc_proto.h matches our symbol.c
+  [=] lkc.h declares menu_end_entry (what our zconf.tab.c calls)
+===== fixups done =====
+ M fixup.log
+ M markers.txt
+ M report.md
+M  scripts/kconfig/.gitignore
+M  scripts/kconfig/Makefile
+M  scripts/kconfig/conf.c
+M  scripts/kconfig/kconf_id.c
+M  scripts/kconfig/kxgettext.c
+M  scripts/kconfig/lkc.h
+M  scripts/kconfig/lkc_proto.h
+M  scripts/kconfig/lxdialog/check-lxdialog.sh
+M  scripts/kconfig/mconf.c
+M  scripts/kconfig/util.c
+```
