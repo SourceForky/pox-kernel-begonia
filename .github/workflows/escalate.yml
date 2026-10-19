@@ -429,7 +429,12 @@ jobs:
           in_ours()     { git cat-file -e "$BASE:$1" 2>/dev/null; }
 
           for iter in $(seq 1 ${{ inputs.self_heal_iters }}); do
-            NERR=$(grep -c ' error: ' build_log.txt)
+            # Linker failures contain no " error: " at all -- ld says
+            # "undefined reference to `sym'".  Counting compiler errors alone made
+            # a build with 109 unresolved symbols look "already clean" (observed on
+            # the v4.15 step, run 39247895793), so every shape of build failure is
+            # counted here.
+            NERR=$(grep -cE ' error: |undefined reference to |multiple definition of |cannot find -l|No rule to make target' build_log.txt)
             echo ""
             echo "===== self-heal round $iter (build has $NERR error lines) ====="
             if [ "$NERR" -eq 0 ]; then echo "build already clean"; break; fi
@@ -526,6 +531,54 @@ jobs:
               fi
             done < errfiles.txt
 
+            # (5) undefined REFERENCES at link time.  ` error: ` never sees these.
+            #     Two sub-cases, both of them "restore a file we already ship":
+            #     (5a) the file making the reference is adopted, and OUR version of
+            #          that file does not reference the symbol at all -- so
+            #          reverting it only removes a call our generation never made.
+            #          (upstream's mm/sparse-vmemmap.c calling
+            #          memblock_virt_alloc_try_nid_raw; upstream's
+            #          arch/arm64/lib/delay.c calling arch_timer_evtstrm_available,
+            #          which upstream defines in the timer driver we keep ours.)
+            #     (5b) the file that DEFINED the symbol in our tree was replaced by
+            #          an upstream version that no longer defines it
+            #          (fs/xfs/libxfs/xfs_bmap_btree.c for the xfs_bmbt_* extent
+            #          accessors; fs/xfs/xfs_buf.h, which our tree defines
+            #          xfs_buf_set_ref as a static inline in while upstream moved it
+            #          into upstream's xfs_buf.c, a file we keep ours).
+            grep -o "undefined reference to \`[A-Za-z_][A-Za-z0-9_]*'" build_log.txt \
+              | sed -E "s/.*\`([A-Za-z_][A-Za-z0-9_]*)'.*/\1/" | sort -u > linksyms.txt
+            grep -E "^[^ ]+\.o[:(]" build_log.txt \
+              | sed -E 's#^.*/pox-kernel-begonia/##' \
+              | sed -E 's#^([^:]+)\.o[:(].*#\1.c#' | sort -u > linkobjs.txt
+            while read -r f; do
+              [ -n "$f" ] || continue
+              if is_upstream "$f" && in_ours "$f"; then
+                hit=0
+                while read -r s; do
+                  [ -n "$s" ] || continue
+                  if git grep -q -w "$s" "$BASE" -- "$f" 2>/dev/null; then hit=1; fi
+                done < linksyms.txt
+                if [ "$hit" -eq 0 ]; then
+                  echo "  (5a) $f references none of them in our tree"
+                  echo "$f" >> cand.txt
+                fi
+              fi
+            done < linkobjs.txt
+            while read -r s; do
+              [ -n "$s" ] || continue
+              case "$s" in
+                block|flags|dev|info|data|name|list|node|type|size|count|index|value|mode|addr|len|ops|queue|req|bio|inode|file|page|task|work|event|state|config|owner|private|key|id) continue ;;
+              esac
+              for df in $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*\(" "$BASE" -- '*.c' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
+                        $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*\(" "$BASE" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8); do
+                if is_upstream "$df" && in_ours "$df"; then
+                  echo "  (5b) $df defines $s in our tree"
+                  echo "$df" >> cand.txt
+                fi
+              done
+            done < linksyms.txt
+
             # (3b) the other definition of a redefined identifier, and the adopted
             #      header that declares a function with a conflicting signature
             { sed -n "s/.*redefinition of '\([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt
@@ -550,7 +603,7 @@ jobs:
             git -c user.name="Pox Escalation Bot" -c user.email="escalation@pox.local" \
                 commit -m "selfheal(${{ inputs.target_branch }}): revert $N adopted upstream files that break the build (round $iter)" || true
             EXTRA_FLAGS="${{ inputs.extra_flags }}" ./build.sh kernel > build_log.txt 2>&1
-            echo "round $iter rebuild exit: $?  error lines: $(grep -c ' error: ' build_log.txt)"
+            echo "round $iter rebuild exit: $?  error lines: $(grep -c ' error: ' build_log.txt)  unresolved symbols: $(grep -c 'undefined reference to' build_log.txt)"
           done
 
           {
@@ -559,6 +612,7 @@ jobs:
             echo ""
             echo "- adopted upstream files reverted: $(grep -c . selfheal_reverts.txt)"
             echo "- final error lines: $(grep -c ' error: ' build_log.txt)"
+            echo "- final unresolved symbols: $(grep -c 'undefined reference to' build_log.txt)"
             echo ""
             echo '```'
             sort -u selfheal_reverts.txt | head -120
