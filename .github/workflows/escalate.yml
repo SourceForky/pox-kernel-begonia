@@ -323,6 +323,12 @@ jobs:
           done
           if [[ -n "$FIX" ]]; then
             echo "applying $FIX"
+            # A CRLF fixup (written from a Windows editor) makes bash die with
+            # "$'\r': command not found" and then a syntax error at the first line
+            # continuation, so *nothing* after that line gets applied -- observed on
+            # the v4.15 step, where the fixup aborted at line 73 and Fixes 2-6 were
+            # silently skipped.  Normalise the line endings before handing it to bash.
+            sed -i 's/\r$//' "$FIX"
             bash "$FIX" > fixup.log 2>&1
             echo "fixup exit: $?"
             tail -40 fixup.log
