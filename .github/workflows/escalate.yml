@@ -378,6 +378,7 @@ jobs:
         run: |
           set +e
           [ -f build_log.txt ] || exit 0
+          UP="$UPSTREAM_SHA"
           # Change sets: who touched what, relative to the merge base.
           git diff --no-renames --name-only "$MERGE_BASE" "origin/${{ inputs.base_branch }}" | sort -u > d_ours.txt
           git diff --no-renames --name-only "$MERGE_BASE" "$UP" | sort -u > d_up.txt
@@ -472,6 +473,9 @@ jobs:
             build_log.txt
             fixup.log
             diagnosis.txt
+            d_both.txt
+            d_uponly.txt
+            d_oursonly.txt
           retention-days: 30
 
       - name: Job summary
