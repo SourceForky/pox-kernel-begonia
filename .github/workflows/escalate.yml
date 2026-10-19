@@ -421,7 +421,7 @@ jobs:
             #     That is the culprit definition, and it is what hand analysis of
             #     the NFS/refcount and XFS clusters found (F-024).  If the note
             #     names OUR file the revert is a no-op, so this is safe.
-            grep -E ': note: (previous definition is here|.* declared here|.* defined here|expanded from macro)' build_log.txt \
+            grep -E ': note: (.*here|expanded from macro)' build_log.txt \
               | sed -E 's#^.*/pox-kernel-begonia/##' \
               | sed -E 's#^([^:]+):[0-9]+(:[0-9]+)?: note: .*#\1#' \
               | sort -u > notefiles.txt
@@ -453,10 +453,26 @@ jobs:
               case "$s" in
                 block|flags|dev|info|data|name|list|node|type|size|count|index|value|mode|addr|len|ops|queue|req|bio|inode|file|page|task|work|event|state|config|owner|private|key|id) continue ;;
               esac
-              for df in $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | head -8) \
-                        $(git grep -l -E "^#define[[:space:]]+$s([^A-Za-z0-9_]|$)" "$UP" -- '*.h' 2>/dev/null | head -8) \
-                        $(git grep -l -E "typedef[^;]*[^A-Za-z0-9_]$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | head -8) \
-                        $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*\(" "$UP" -- '*.h' 2>/dev/null | head -8); do
+              for df in $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
+                        $(git grep -l -E "^#define[[:space:]]+$s([^A-Za-z0-9_]|$)" "$UP" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
+                        $(git grep -l -E "typedef[^;]*[^A-Za-z0-9_]$s[[:space:]]*;" "$UP" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
+                        $(git grep -l -E "(^|[^A-Za-z0-9_])$s[[:space:]]*\(" "$UP" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8); do
+                if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
+              done
+            done < syms.txt
+
+            # (2b) The same symbols, looked up in OUR OWN tree instead.  If our tree
+            #      defined the symbol but the merged tree does not, then the file that
+            #      defined it was replaced by an adopted version -- and upstream may
+            #      not have the symbol at all any more (arm64 local_dbg_save,
+            #      netfilter LOG_INVALID, ...), in which case rule 2 finds nothing.
+            #      Searching our side finds the file that has to come back.
+            while read -r s; do
+              [ -n "$s" ] || continue
+              case "$s" in
+                block|flags|dev|info|data|name|list|node|type|size|count|index|value|mode|addr|len|ops|queue|req|bio|inode|file|page|task|work|event|state|config|owner|private|key|id) continue ;;
+              esac
+              for df in $(git grep -l -w "$s" "$BASE" -- '*.h' 2>/dev/null | sed -E 's#^[^:]+:##' | head -8); do
                 if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
               done
             done < syms.txt
@@ -465,8 +481,8 @@ jobs:
             sed -n "s/.*no member named '[A-Za-z_][A-Za-z0-9_]*' in 'struct \([A-Za-z_][A-Za-z0-9_]*\)'.*/\1/p" build_log.txt | sort -u > structs.txt
             while read -r t; do
               [ -n "$t" ] || continue
-              for df in $(git grep -l -F "struct $t {" HEAD 2>/dev/null | head -8) \
-                        $(git grep -l -F "} $t;" HEAD 2>/dev/null | head -8); do
+              for df in $(git grep -l -F "struct $t {" HEAD 2>/dev/null | sed -E 's#^[^:]+:##' | head -8) \
+                        $(git grep -l -F "} $t;" HEAD 2>/dev/null | sed -E 's#^[^:]+:##' | head -8); do
                 if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
               done
             done < structs.txt
@@ -478,7 +494,7 @@ jobs:
             } | sort -u > idents.txt
             while read -r t; do
               [ -n "$t" ] || continue
-              for df in $(git grep -l -w "$t" HEAD 2>/dev/null | head -8); do
+              for df in $(git grep -l -w "$t" HEAD 2>/dev/null | sed -E 's#^[^:]+:##' | head -8); do
                 if is_upstream "$df" && in_ours "$df"; then echo "$df" >> cand.txt; fi
               done
             done < idents.txt
