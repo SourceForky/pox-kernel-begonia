@@ -39,6 +39,7 @@ on:
           - none
           - theirs
           - ours
+          - both-ours
           - auto-vendor
           - upstream-core
       attempt_build:
@@ -180,7 +181,35 @@ jobs:
           git diff --name-only --diff-filter=U > unmerged.txt
           echo "unmerged paths: $(grep -c . unmerged.txt)"
 
-          if [[ "$SIDE" == "upstream-core" ]]; then
+          if [[ "$SIDE" == "both-ours" ]]; then
+            # Take OUR version of every file that BOTH sides modified since the
+            # merge base -- whether or not git flagged a conflict.
+            #
+            # Rationale: git's automatic 3-way merge can silently emit a HYBRID
+            # for a file it does NOT flag as conflicted.  Observed on v4.15:
+            # include/uapi/linux/kcov.h came out with its enumerator block
+            # duplicated (KCOV_TRACE_PC/CMP redefined) and scripts/mod/
+            # file2alias.c came out with 5 of upstream's new tbsvc tokens but
+            # only 1 of the 37 ADD_TO_DEVTABLE() uses.  Both are unbuildable and
+            # neither appears in conflicts.txt.  So the conflict list alone is
+            # not a sound basis for resolution: the basis is "who touched it".
+            #
+            # Files only upstream touched keep upstream's content (real forward
+            # progress).  Files only we touched keep ours.  Files both touched
+            # keep OURS -- these are the coupled pairs, so no half-pair can form
+            # and no MediaTek hook is dropped.
+            git diff --name-only -z "$MERGE_BASE" HEAD  | tr '\0' '\n' | sort -u > v_changed.txt
+            git diff --name-only -z "$MERGE_BASE" "$UP" | tr '\0' '\n' | sort -u > u_changed.txt
+            comm -12 v_changed.txt u_changed.txt > both.txt
+            git ls-tree -r -z --name-only HEAD | tr '\0' '\n' | sort -u > head_files.txt
+            comm -12 both.txt head_files.txt > keep_ours.txt
+            comm -23 both.txt head_files.txt > drop_ours.txt
+            echo "vendor-changed=$(grep -c . v_changed.txt) upstream-changed=$(grep -c . u_changed.txt) both=$(grep -c . both.txt)"
+            echo "kept-ours=$(grep -c . keep_ours.txt) dropped=$(grep -c . drop_ours.txt)"
+            xargs -a keep_ours.txt -d '\n' -r git checkout HEAD --
+            xargs -a drop_ours.txt -d '\n' -r git rm -q -f -- 2>/dev/null || true
+            SIDE="both-ours (kept=$(grep -c . keep_ours.txt) dropped=$(grep -c . drop_ours.txt))"
+          elif [[ "$SIDE" == "upstream-core" ]]; then
             # Adopt upstream VERBATIM for every path upstream changed since the
             # merge base; keep our own version of everything upstream never
             # touched (the MediaTek/POX-only files). This is the only policy that
